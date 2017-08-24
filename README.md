@@ -9,6 +9,7 @@ The input variables are documented in their description and it's best to refer t
 ## Ouputs
 
 - `etcd_ip_list` - a list with the IP addresses of the created etcd nodes
+- `cfssl_ip` - the IP address of the cfssl server that manages certificates
 - `master_address` - the endpoint on which the kubernetes api is made available
 - `etcd_security_group_id` - the id of the security group to which kubernetes etcd nodes belong
 - `master_security_group_id` - the id of the security group to which kubernetes master nodes belong
@@ -33,6 +34,7 @@ module "aws_cluster" {
   public_subnet_ids              = "${aws_subnet.public.*.id}"
   key_name                       = "${aws_key_pair.example.key_name}"
   ssh_security_group_id          = "${aws_security_group.ssh.id}"
+  cfssl_user_data                = "${module.ignition.cfssl}"
   etcd_user_data                 = "${module.ignition.etcd}"
   master_user_data               = "${module.ignition.master}"
   worker_user_data               = "${module.ignition.worker}"
