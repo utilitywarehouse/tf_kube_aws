@@ -1,7 +1,8 @@
 resource "null_resource" "cfssl_address" {
   triggers {
-    subnet  = "${var.private_subnet_ids[0]}"
-    address = "${cidrhost(data.aws_subnet.private.*.cidr_block[0], 5)}"
+    subnet            = "${var.private_subnet_ids[0]}"
+    availability_zone = "${data.aws_subnet.private.*.availability_zone[0]}"
+    address           = "${cidrhost(data.aws_subnet.private.*.cidr_block[0], 5)}"
   }
 }
 
@@ -32,6 +33,26 @@ resource "aws_instance" "cfssl" {
     # used by kubelet's aws provider to determine cluster
     "KubernetesCluster" = "${var.cluster_name}"
   }
+}
+
+resource "aws_ebs_volume" "cfssl-data" {
+  availability_zone = "${null_resource.cfssl_address.triggers.availability_zone}"
+  size              = 5
+  type              = "gp2"
+
+  tags {
+    "Name" = "cfssl ${var.cluster_name} data vol ${count.index}"
+    "role" = "${var.cluster_name}"
+
+    # used by kubelet's aws provider to determine cluster
+    "KubernetesCluster" = "${var.cluster_name}"
+  }
+}
+
+resource "aws_volume_attachment" "cfssl-data" {
+  device_name = "/dev/xvdf"
+  volume_id   = "${aws_ebs_volume.cfssl-data.*.id[count.index]}"
+  instance_id = "${aws_instance.cfssl.*.id[count.index]}"
 }
 
 // VPC Security Group
