@@ -22,7 +22,7 @@ resource "aws_instance" "cfssl" {
 
   root_block_device = {
     volume_type = "gp2"
-    volume_size = "8"
+    volume_size = 5
   }
 
   # Instance tags

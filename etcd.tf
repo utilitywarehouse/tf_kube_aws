@@ -72,7 +72,7 @@ resource "aws_instance" "etcd" {
 
   root_block_device = {
     volume_type = "gp2"
-    volume_size = "30"
+    volume_size = 10
   }
 
   # Instance tags
@@ -89,7 +89,7 @@ resource "aws_instance" "etcd" {
 resource "aws_ebs_volume" "etcd-data" {
   count             = "${var.etcd_instance_count}"
   availability_zone = "${null_resource.etcd_address.*.triggers.availability_zone[count.index]}"
-  size              = 50
+  size              = 10
   type              = "gp2"
 
   tags {
