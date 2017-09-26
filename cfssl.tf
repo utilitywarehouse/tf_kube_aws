@@ -27,11 +27,11 @@ resource "aws_instance" "cfssl" {
 
   # Instance tags
   tags {
-    "Name" = "cfssl ${var.cluster_name}"
-    "role" = "${var.cluster_name}"
+    "Name"                   = "cfssl ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/cfssl"
 
-    # used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
@@ -41,11 +41,11 @@ resource "aws_ebs_volume" "cfssl-data" {
   type              = "gp2"
 
   tags {
-    "Name" = "cfssl ${var.cluster_name} data vol ${count.index}"
-    "role" = "${var.cluster_name}"
+    "Name"                   = "cfssl ${var.cluster_name} data vol ${count.index}"
+    "terraform.io/component" = "${var.cluster_name}/cfssl"
 
-    # used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
@@ -62,10 +62,11 @@ resource "aws_security_group" "cfssl" {
   vpc_id      = "${var.vpc_id}"
 
   tags {
-    "Name" = "cfssl ${var.cluster_name}"
+    "Name"                   = "cfssl ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/cfssl"
 
-    // used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
