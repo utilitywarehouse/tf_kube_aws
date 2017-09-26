@@ -32,7 +32,6 @@ resource "aws_iam_role_policy" "master" {
     {
       "Action": [
         "ec2:*",
-        "elasticloadbalancing:*"
         ],
       "Effect": "Allow",
       "Resource": [ "*" ]

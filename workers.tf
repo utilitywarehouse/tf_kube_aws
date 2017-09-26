@@ -34,13 +34,6 @@ resource "aws_iam_role_policy" "worker" {
     {
       "Effect": "Allow",
       "Action": [
-        "ec2:Describe*",
-        "ec2:AttachVolume",
-        "ec2:DetachVolume",
-        "ec2:CreateRoute",
-        "ec2:DeleteRoute",
-        "ec2:ReplaceRoute",
-        "ec2:DescribeRouteTables",
         "ec2:DescribeInstances"
       ],
       "Resource": "*"
