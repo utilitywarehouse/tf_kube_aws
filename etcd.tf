@@ -23,27 +23,6 @@ resource "aws_iam_instance_profile" "etcd" {
   role = "${aws_iam_role.etcd.name}"
 }
 
-resource "aws_iam_role_policy" "etcd" {
-  name = "${var.cluster_name}-etcd"
-  role = "${aws_iam_role.etcd.id}"
-
-  policy = <<EOS
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:List*",
-        "s3:Get*"
-      ],
-      "Resource": [ "arn:aws:s3:::${var.ssl_s3_bucket_name}/*" ]
-    }
-  ]
-}
-EOS
-}
-
 resource "null_resource" "etcd_address" {
   count = "${var.etcd_instance_count}"
 

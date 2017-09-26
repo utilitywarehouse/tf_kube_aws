@@ -6,10 +6,36 @@ resource "null_resource" "cfssl_address" {
   }
 }
 
+// IAM instance role
+resource "aws_iam_role" "cfssl" {
+  name = "${var.cluster_name}_cfssl"
+
+  assume_role_policy = <<EOS
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOS
+}
+
+resource "aws_iam_instance_profile" "cfssl" {
+  name = "${var.cluster_name}-cfssl"
+  role = "${aws_iam_role.cfssl.name}"
+}
+
 // EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = "${var.containerlinux_ami_id}"
   instance_type          = "t2.nano"
+  iam_instance_profile   = "${aws_iam_instance_profile.cfssl.name}"
   user_data              = "${var.cfssl_user_data}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.cfssl.id}"]
