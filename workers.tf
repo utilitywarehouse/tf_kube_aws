@@ -73,7 +73,7 @@ resource "aws_launch_configuration" "worker" {
 
   # Storage
   root_block_device {
-    volume_size = 52
+    volume_size = 50
     volume_type = "gp2"
   }
 }
@@ -93,7 +93,7 @@ resource "aws_launch_configuration" "worker-spot" {
 
   # Storage
   root_block_device {
-    volume_size = 52
+    volume_size = 50
     volume_type = "gp2"
   }
 }
