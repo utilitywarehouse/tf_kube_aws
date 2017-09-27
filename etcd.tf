@@ -57,7 +57,7 @@ resource "aws_instance" "etcd" {
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "etcd ${var.cluster_name} ${count.index}",
-    "terraform.io/component", "${var.cluster_name}/etcd/${count.index}"
+    "terraform.io/component", "${var.cluster_name}/etcd/${count.index}",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
 }
@@ -71,7 +71,7 @@ resource "aws_ebs_volume" "etcd-data" {
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "etcd ${var.cluster_name} data vol ${count.index}",
-    "terraform.io/component", "${var.cluster_name}/etcd/${count.index}"
+    "terraform.io/component", "${var.cluster_name}/etcd/${count.index}",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
     "SnapshotManager", "true",
     "SnapshotRetentionDays", "3",
@@ -94,7 +94,7 @@ resource "aws_security_group" "etcd" {
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "etcd ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/etcd"
+    "terraform.io/component", "${var.cluster_name}/etcd",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
 }

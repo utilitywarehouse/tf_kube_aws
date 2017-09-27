@@ -212,7 +212,7 @@ resource "aws_security_group" "worker" {
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "worker ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/worker"
+    "terraform.io/component", "${var.cluster_name}/worker",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
 }

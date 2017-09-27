@@ -121,7 +121,7 @@ resource "aws_elb" "master" {
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "master ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/master"
+    "terraform.io/component", "${var.cluster_name}/master",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
 }
@@ -135,7 +135,7 @@ resource "aws_security_group" "master" {
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "master ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/master"
+    "terraform.io/component", "${var.cluster_name}/master",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
 }
