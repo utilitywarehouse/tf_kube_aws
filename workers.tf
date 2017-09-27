@@ -113,30 +113,24 @@ resource "aws_autoscaling_group" "worker" {
   load_balancers            = ["${var.worker_elb_names}"]
   default_cooldown          = 60
 
-  tag {
-    key                 = "builtWith"
-    value               = "terraform"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Cluster"
-    value               = "${var.cluster_name}"
-    propagate_at_launch = true
-  }
-
-  # used by kubelet's aws provider to determine cluster
-  tag {
-    key                 = "KubernetesCluster"
-    value               = "${var.cluster_name}"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "worker ${var.cluster_name}"
-    propagate_at_launch = true
-  }
+  tags = [
+    {
+      key                 = "Name"
+      value               = "worker ${var.cluster_name}"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "terraform.io/component"
+      value               = "${var.cluster_name}/master"
+      propagate_at_launch = true
+    },
+    {
+      // kube uses this tag to learn its cluster name and tag managed resources
+      key                 = "kubernetes.io/cluster/${var.cluster_name}"
+      value               = "owned"
+      propagate_at_launch = true
+    },
+  ]
 }
 
 resource "aws_autoscaling_group" "worker-spot" {
@@ -154,30 +148,24 @@ resource "aws_autoscaling_group" "worker-spot" {
   load_balancers            = ["${var.worker_elb_names}"]
   default_cooldown          = 60
 
-  tag {
-    key                 = "builtWith"
-    value               = "terraform"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Cluster"
-    value               = "${var.cluster_name}"
-    propagate_at_launch = true
-  }
-
-  # used by kubelet's aws provider to determine cluster
-  tag {
-    key                 = "KubernetesCluster"
-    value               = "${var.cluster_name}"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "worker-spot ${var.cluster_name}"
-    propagate_at_launch = true
-  }
+  tags = [
+    {
+      key                 = "Name"
+      value               = "worker-spot ${var.cluster_name}"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "terraform.io/component"
+      value               = "${var.cluster_name}/master"
+      propagate_at_launch = true
+    },
+    {
+      // kube uses this tag to learn its cluster name and tag managed resources
+      key                 = "kubernetes.io/cluster/${var.cluster_name}"
+      value               = "owned"
+      propagate_at_launch = true
+    },
+  ]
 }
 
 resource "aws_autoscaling_policy" "scale-up-on-demand" {
@@ -239,8 +227,11 @@ resource "aws_security_group" "worker" {
   vpc_id      = "${var.vpc_id}"
 
   tags {
-    "Name"              = "worker ${var.cluster_name}"
-    "KubernetesCluster" = "${var.cluster_name}"        // used by kubelet's aws provider to determine cluster
+    "Name"                   = "worker ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/master"
+
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 

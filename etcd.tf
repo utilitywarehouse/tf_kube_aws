@@ -77,12 +77,11 @@ resource "aws_instance" "etcd" {
 
   # Instance tags
   tags {
-    "Name"     = "etcd ${var.cluster_name} ${count.index}"
-    "instance" = "${count.index}"
-    "role"     = "${var.cluster_name}"
+    "Name"                   = "etcd ${var.cluster_name} ${count.index}"
+    "terraform.io/component" = "${var.cluster_name}/etcd/${count.index}"
 
-    # used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
@@ -93,11 +92,11 @@ resource "aws_ebs_volume" "etcd-data" {
   type              = "gp2"
 
   tags {
-    "Name" = "etcd ${var.cluster_name} data vol ${count.index}"
-    "role" = "${var.cluster_name}"
+    "Name"                   = "etcd ${var.cluster_name} data vol ${count.index}"
+    "terraform.io/component" = "${var.cluster_name}/etcd/${count.index}"
 
-    # used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
 
     # used by snapshot-manager lambda
     "SnapshotManager"       = "true"
@@ -119,10 +118,11 @@ resource "aws_security_group" "etcd" {
   vpc_id      = "${var.vpc_id}"
 
   tags {
-    "Name" = "etcd ${var.cluster_name}"
+    "Name"                   = "etcd ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/etcd"
 
-    // used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 

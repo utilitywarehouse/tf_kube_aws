@@ -83,30 +83,24 @@ resource "aws_autoscaling_group" "master" {
   load_balancers            = ["${aws_elb.master.name}"]
   default_cooldown          = 60
 
-  tag {
-    key                 = "builtWith"
-    value               = "terraform"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Cluster"
-    value               = "${var.cluster_name}"
-    propagate_at_launch = true
-  }
-
-  # used by kubelet's aws provider to determine cluster
-  tag {
-    key                 = "KubernetesCluster"
-    value               = "${var.cluster_name}"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "master ${var.cluster_name}"
-    propagate_at_launch = true
-  }
+  tags = [
+    {
+      key                 = "Name"
+      value               = "master ${var.cluster_name}"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "terraform.io/component"
+      value               = "${var.cluster_name}/master"
+      propagate_at_launch = true
+    },
+    {
+      // kube uses this tag to learn its cluster name and tag managed resources
+      key                 = "kubernetes.io/cluster/${var.cluster_name}"
+      value               = "owned"
+      propagate_at_launch = true
+    },
+  ]
 }
 
 // ELBs
@@ -134,8 +128,11 @@ resource "aws_elb" "master" {
   }
 
   tags {
-    Name = "master ${var.cluster_name}"
-    role = "apiserver"
+    "Name"                   = "master ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/master"
+
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
@@ -146,10 +143,11 @@ resource "aws_security_group" "master" {
   vpc_id      = "${var.vpc_id}"
 
   tags {
-    "Name" = "master ${var.cluster_name}"
+    "Name"                   = "master ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/master"
 
-    # used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
@@ -204,10 +202,11 @@ resource "aws_security_group" "master-elb" {
   vpc_id      = "${var.vpc_id}"
 
   tags {
-    "Name" = "master elb ${var.cluster_name}"
+    "Name"                   = "master elb ${var.cluster_name}"
+    "terraform.io/component" = "${var.cluster_name}/master"
 
-    // used by kubelet's aws provider to determine cluster
-    "KubernetesCluster" = "${var.cluster_name}"
+    // kube uses this tag to learn its cluster name and tag managed resources
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
