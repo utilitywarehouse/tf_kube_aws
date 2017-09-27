@@ -66,6 +66,11 @@ variable "etcd_user_data" {
   type        = "list"
 }
 
+variable "etcd_data_volume_size" {
+  description = "The size (in GB) of the data volumes used in etcd nodes."
+  default     = "5"
+}
+
 // master nodes
 variable "master_instance_count" {
   default     = "3"

@@ -88,7 +88,7 @@ resource "aws_instance" "etcd" {
 resource "aws_ebs_volume" "etcd-data" {
   count             = "${var.etcd_instance_count}"
   availability_zone = "${null_resource.etcd_address.*.triggers.availability_zone[count.index]}"
-  size              = 10
+  size              = "${var.etcd_data_volume_size}"
   type              = "gp2"
 
   tags {
