@@ -31,8 +31,8 @@ resource "aws_iam_role_policy" "master" {
   "Statement": [
     {
       "Action": [
-        "ec2:*",
-        ],
+        "ec2:*"
+      ],
       "Effect": "Allow",
       "Resource": [ "*" ]
     }
