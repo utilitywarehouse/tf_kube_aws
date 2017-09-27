@@ -54,14 +54,12 @@ resource "aws_instance" "etcd" {
     volume_size = 10
   }
 
-  # Instance tags
-  tags {
-    "Name"                   = "etcd ${var.cluster_name} ${count.index}"
-    "terraform.io/component" = "${var.cluster_name}/etcd/${count.index}"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "etcd ${var.cluster_name} ${count.index}",
+    "terraform.io/component", "${var.cluster_name}/etcd/${count.index}"
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_ebs_volume" "etcd-data" {
@@ -70,17 +68,14 @@ resource "aws_ebs_volume" "etcd-data" {
   size              = "${var.etcd_data_volume_size}"
   type              = "gp2"
 
-  tags {
-    "Name"                   = "etcd ${var.cluster_name} data vol ${count.index}"
-    "terraform.io/component" = "${var.cluster_name}/etcd/${count.index}"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-
-    # used by snapshot-manager lambda
-    "SnapshotManager"       = "true"
-    "SnapshotRetentionDays" = "3"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "etcd ${var.cluster_name} data vol ${count.index}",
+    "terraform.io/component", "${var.cluster_name}/etcd/${count.index}"
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+    "SnapshotManager", "true",
+    "SnapshotRetentionDays", "3",
+  )}"
 }
 
 resource "aws_volume_attachment" "etcd-data" {
@@ -96,13 +91,12 @@ resource "aws_security_group" "etcd" {
   description = "k8s etcd security group"
   vpc_id      = "${var.vpc_id}"
 
-  tags {
-    "Name"                   = "etcd ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/etcd"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "etcd ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/etcd"
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_security_group_rule" "egress-from-etcd" {

@@ -118,13 +118,12 @@ resource "aws_elb" "master" {
     lb_protocol       = "tcp"
   }
 
-  tags {
-    "Name"                   = "master ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/master"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "master ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/master"
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 // VPC Security Group
@@ -133,13 +132,12 @@ resource "aws_security_group" "master" {
   description = "k8s master security group"
   vpc_id      = "${var.vpc_id}"
 
-  tags {
-    "Name"                   = "master ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/master"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "master ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/master"
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_security_group_rule" "egress-from-master" {
@@ -192,13 +190,12 @@ resource "aws_security_group" "master-elb" {
   description = "k8s master (apiserver) external elb"
   vpc_id      = "${var.vpc_id}"
 
-  tags {
-    "Name"                   = "master elb ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/master"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "master elb ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/master",
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_security_group_rule" "egress-from-master-elb" {

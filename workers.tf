@@ -56,7 +56,6 @@ resource "aws_launch_configuration" "worker" {
     create_before_destroy = true
   }
 
-  # Storage
   root_block_device {
     volume_size = 50
     volume_type = "gp2"
@@ -76,7 +75,6 @@ resource "aws_launch_configuration" "worker-spot" {
     create_before_destroy = true
   }
 
-  # Storage
   root_block_device {
     volume_size = 50
     volume_type = "gp2"
@@ -211,13 +209,12 @@ resource "aws_security_group" "worker" {
   description = "k8s worker security group"
   vpc_id      = "${var.vpc_id}"
 
-  tags {
-    "Name"                   = "worker ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/master"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "worker ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/worker"
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_security_group_rule" "egress-from-worker" {

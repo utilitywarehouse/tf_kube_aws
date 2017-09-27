@@ -51,14 +51,12 @@ resource "aws_instance" "cfssl" {
     volume_size = 5
   }
 
-  # Instance tags
-  tags {
-    "Name"                   = "cfssl ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/cfssl"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "cfssl ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/cfssl",
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
@@ -66,13 +64,12 @@ resource "aws_ebs_volume" "cfssl-data" {
   size              = 5
   type              = "gp2"
 
-  tags {
-    "Name"                   = "cfssl ${var.cluster_name} data vol ${count.index}"
-    "terraform.io/component" = "${var.cluster_name}/cfssl"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "cfssl ${var.cluster_name} data vol ${count.index}",
+    "terraform.io/component", "${var.cluster_name}/cfssl",
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_volume_attachment" "cfssl-data" {
@@ -87,13 +84,12 @@ resource "aws_security_group" "cfssl" {
   description = "k8s cfssl security group"
   vpc_id      = "${var.vpc_id}"
 
-  tags {
-    "Name"                   = "cfssl ${var.cluster_name}"
-    "terraform.io/component" = "${var.cluster_name}/cfssl"
-
-    // kube uses this tag to learn its cluster name and tag managed resources
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
+  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
+  tags = "${map(
+    "Name", "cfssl ${var.cluster_name}",
+    "terraform.io/component", "${var.cluster_name}/cfssl",
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
 }
 
 resource "aws_security_group_rule" "egress-from-cfssl" {
