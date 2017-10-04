@@ -84,13 +84,11 @@ resource "aws_launch_configuration" "worker-spot" {
 resource "aws_autoscaling_group" "worker" {
   name                      = "worker ${var.cluster_name}"
   desired_capacity          = "${var.worker_ondemand_instance_count}"
-  max_size                  = "${var.worker_ondemand_instance_count + var.worker_spot_instance_count}"
+  max_size                  = "${var.worker_ondemand_instance_count}"
   min_size                  = "${var.worker_ondemand_instance_count}"
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  termination_policies      = ["NewestInstance"]
-  enabled_metrics           = ["GroupInServiceInstances", "GroupTotalInstances"]
   launch_configuration      = "${aws_launch_configuration.worker.name}"
   vpc_zone_identifier       = ["${var.private_subnet_ids}"]
   load_balancers            = ["${var.worker_elb_names}"]
@@ -124,8 +122,6 @@ resource "aws_autoscaling_group" "worker-spot" {
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  termination_policies      = ["NewestInstance"]
-  enabled_metrics           = ["GroupInServiceInstances", "GroupTotalInstances"]
   launch_configuration      = "${aws_launch_configuration.worker-spot.name}"
   vpc_zone_identifier       = ["${var.private_subnet_ids}"]
   load_balancers            = ["${var.worker_elb_names}"]
@@ -149,58 +145,6 @@ resource "aws_autoscaling_group" "worker-spot" {
       propagate_at_launch = true
     },
   ]
-}
-
-resource "aws_autoscaling_policy" "scale-up-on-demand" {
-  name                   = "scale-up-on-demand"
-  scaling_adjustment     = 1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 60
-  autoscaling_group_name = "${aws_autoscaling_group.worker.name}"
-}
-
-resource "aws_autoscaling_policy" "scale-down-on-demand" {
-  name                   = "scale-down-on-demand"
-  scaling_adjustment     = "${var.worker_ondemand_instance_count}"
-  adjustment_type        = "ExactCapacity"
-  cooldown               = 60
-  autoscaling_group_name = "${aws_autoscaling_group.worker.name}"
-}
-
-resource "aws_cloudwatch_metric_alarm" "spot-instances-terminated" {
-  alarm_name                = "spot-instances-terminated-${var.cluster_name}"
-  comparison_operator       = "LessThanThreshold"
-  evaluation_periods        = "2"
-  metric_name               = "GroupInServiceInstances"
-  namespace                 = "AWS/AutoScaling"
-  period                    = "60"
-  statistic                 = "Average"
-  threshold                 = "${var.worker_spot_instance_count}"
-  alarm_description         = "This metric checks if spot instances have been terminated."
-  insufficient_data_actions = []
-  alarm_actions             = ["${aws_autoscaling_policy.scale-up-on-demand.arn}"]
-
-  dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.worker-spot.name}"
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "spot-instances-fulfilled" {
-  alarm_name                = "spot-instances-fulfilled-${var.cluster_name}"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "2"
-  metric_name               = "GroupInServiceInstances"
-  namespace                 = "AWS/AutoScaling"
-  period                    = "60"
-  statistic                 = "Average"
-  threshold                 = "${var.worker_spot_instance_count}"
-  alarm_description         = "This metric checks if all spot bids have been fulfilled."
-  insufficient_data_actions = []
-  alarm_actions             = ["${aws_autoscaling_policy.scale-down-on-demand.arn}"]
-
-  dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.worker-spot.name}"
-  }
 }
 
 // VPC security groups
