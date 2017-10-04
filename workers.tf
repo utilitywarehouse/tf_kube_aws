@@ -84,7 +84,7 @@ resource "aws_launch_configuration" "worker-spot" {
 resource "aws_autoscaling_group" "worker" {
   name                      = "worker ${var.cluster_name}"
   desired_capacity          = "${var.worker_ondemand_instance_count}"
-  max_size                  = "${var.worker_ondemand_instance_count + var.worker_spot_instance_count}"
+  max_size                  = "${var.worker_ondemand_instance_count}"
   min_size                  = "${var.worker_ondemand_instance_count}"
   health_check_grace_period = 60
   health_check_type         = "EC2"
