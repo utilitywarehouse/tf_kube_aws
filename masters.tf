@@ -150,12 +150,12 @@ resource "aws_security_group_rule" "egress-from-master" {
 }
 
 resource "aws_security_group_rule" "ingress-master-to-self" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = "${aws_security_group.master.id}"
-  security_group_id        = "${aws_security_group.master.id}"
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = "${aws_security_group.master.id}"
+  self              = true
 }
 
 resource "aws_security_group_rule" "ingress-elb-https-to-master" {

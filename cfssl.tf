@@ -102,12 +102,12 @@ resource "aws_security_group_rule" "egress-from-cfssl" {
 }
 
 resource "aws_security_group_rule" "ingress-cfssl-to-self" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = "${aws_security_group.cfssl.id}"
-  security_group_id        = "${aws_security_group.cfssl.id}"
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = "${aws_security_group.cfssl.id}"
+  self              = true
 }
 
 resource "aws_security_group_rule" "cfssl-ssh" {
