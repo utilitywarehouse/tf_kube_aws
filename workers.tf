@@ -171,12 +171,12 @@ resource "aws_security_group_rule" "egress-from-worker" {
 }
 
 resource "aws_security_group_rule" "ingress-worker-to-self" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = "${aws_security_group.worker.id}"
-  security_group_id        = "${aws_security_group.worker.id}"
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = "${aws_security_group.worker.id}"
+  self              = true
 }
 
 resource "aws_security_group_rule" "ingress-master-to-worker" {
