@@ -154,3 +154,12 @@ resource "aws_security_group_rule" "ingress-worker-to-cfssl-node-exporter" {
   source_security_group_id = "${aws_security_group.worker.id}"
   security_group_id        = "${aws_security_group.cfssl.id}"
 }
+
+// Route53 records
+resource "aws_route53_record" "cfssl-instance" {
+  zone_id = "${var.route53_zone_id}"
+  name    = "cfssl.${var.cluster_name}.${data.aws_route53_zone.main.name}"
+  type    = "A"
+  ttl     = "300"
+  records = ["${aws_instance.cfssl.private_ip}"]
+}
