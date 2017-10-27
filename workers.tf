@@ -194,6 +194,6 @@ resource "aws_security_group_rule" "worker-ssh" {
   from_port                = 22
   to_port                  = 22
   protocol                 = "tcp"
-  source_security_group_id = "${element(var.ssh_security_group_ids), count.index}"
+  source_security_group_id = "${element(var.ssh_security_group_ids, count.index)}"
   security_group_id        = "${aws_security_group.worker.id}"
 }
