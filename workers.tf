@@ -189,10 +189,11 @@ resource "aws_security_group_rule" "ingress-master-to-worker" {
 }
 
 resource "aws_security_group_rule" "worker-ssh" {
+  count                    = "${length(var.ssh_security_group_ids)}"
   type                     = "ingress"
   from_port                = 22
   to_port                  = 22
   protocol                 = "tcp"
-  source_security_group_id = "${var.ssh_security_group_id}"
+  source_security_group_id = "${element(var.ssh_security_group_ids), count.index}"
   security_group_id        = "${aws_security_group.worker.id}"
 }

@@ -32,7 +32,7 @@ module "aws_cluster" {
   private_subnet_ids             = "${aws_subnet.private.*.id}"
   public_subnet_ids              = "${aws_subnet.public.*.id}"
   key_name                       = "${aws_key_pair.example.key_name}"
-  ssh_security_group_id          = "${aws_security_group.ssh.id}"
+  ssh_security_group_ids         = ["${aws_security_group.ssh.id}"]
   cfssl_user_data                = "${module.ignition.cfssl}"
   etcd_user_data                 = "${module.ignition.etcd}"
   master_user_data               = "${module.ignition.master}"
