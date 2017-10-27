@@ -27,6 +27,7 @@ variable "key_name" {
 
 variable "ssh_security_group_ids" {
   description = "The IDs of the Security Groups to open port 22 to."
+  type        = "list"
 }
 
 variable "containerlinux_ami_id" {
