@@ -35,9 +35,14 @@ resource "null_resource" "etcd_address" {
 
 // EC2 Instances
 resource "aws_instance" "etcd" {
-  count                  = "${var.etcd_instance_count}"
-  ami                    = "${var.containerlinux_ami_id}"
-  instance_type          = "${var.etcd_instance_type}"
+  count = "${var.etcd_instance_count}"
+  ami   = "${var.containerlinux_ami_id}"
+
+  # Has to be hardcoded as the new instance type has a different device mapping. `/dev/xvdf` will be accepted for attachment
+  # but actually has a different device name eg. `/dev/nvme1n1`. At this point we don't want to maintain a map for device mount 
+  # to instance type, so we are hardcoding the instance type together with device name.
+  instance_type = "c5.large"
+
   user_data              = "${var.etcd_user_data[count.index]}"
   iam_instance_profile   = "${aws_iam_instance_profile.etcd.name}"
   key_name               = "${var.key_name}"
@@ -80,7 +85,7 @@ resource "aws_ebs_volume" "etcd-data" {
 
 resource "aws_volume_attachment" "etcd-data" {
   count       = "${var.etcd_instance_count}"
-  device_name = "/dev/xvdf"
+  device_name = "/dev/nvme1n1"
   volume_id   = "${aws_ebs_volume.etcd-data.*.id[count.index]}"
   instance_id = "${aws_instance.etcd.*.id[count.index]}"
 }

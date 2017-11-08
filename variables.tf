@@ -53,11 +53,6 @@ variable "etcd_instance_count" {
   description = "The number of etcd instances to launch."
 }
 
-variable "etcd_instance_type" {
-  default     = "t2.small"
-  description = "The type of etcd instances to launch."
-}
-
 variable "etcd_user_data" {
   description = "A list of the user data to provide to the etcd instances. Must be the same length as etcd_instance_count."
   type        = "list"
