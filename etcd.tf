@@ -85,7 +85,7 @@ resource "aws_ebs_volume" "etcd-data" {
 
 resource "aws_volume_attachment" "etcd-data" {
   count       = "${var.etcd_instance_count}"
-  device_name = "nvme6n1"
+  device_name = "/dev/nvme6n1"
   volume_id   = "${aws_ebs_volume.etcd-data.*.id[count.index]}"
   instance_id = "${aws_instance.etcd.*.id[count.index]}"
 }
