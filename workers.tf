@@ -92,6 +92,7 @@ resource "aws_autoscaling_group" "worker" {
   launch_configuration      = "${aws_launch_configuration.worker.name}"
   vpc_zone_identifier       = ["${var.private_subnet_ids}"]
   load_balancers            = ["${var.worker_elb_names}"]
+  target_group_arns         = ["${var.worker_target_group_arns}"]
   default_cooldown          = 60
 
   tags = [
@@ -125,6 +126,7 @@ resource "aws_autoscaling_group" "worker-spot" {
   launch_configuration      = "${aws_launch_configuration.worker-spot.name}"
   vpc_zone_identifier       = ["${var.private_subnet_ids}"]
   load_balancers            = ["${var.worker_elb_names}"]
+  target_group_arns         = ["${var.worker_target_group_arns}"]
   default_cooldown          = 60
 
   tags = [
