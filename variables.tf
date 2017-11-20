@@ -108,6 +108,11 @@ variable "worker_user_data" {
 }
 
 variable "worker_elb_names" {
-  description = "A list of ELB names to be attached to the worker autoscaling groups."
+  description = "A list of Classic ELB names to be attached to the worker autoscaling groups."
+  type        = "list"
+}
+
+variable "worker_target_group_arns" {
+  description = "A list of ALB Target Group ARNs to register the worker instances with."
   type        = "list"
 }
