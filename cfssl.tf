@@ -34,7 +34,7 @@ resource "aws_iam_instance_profile" "cfssl" {
 // EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = "${var.containerlinux_ami_id}"
-  instance_type          = "t2.nano"
+  instance_type          = "t2.micro"
   iam_instance_profile   = "${aws_iam_instance_profile.cfssl.name}"
   user_data              = "${var.cfssl_user_data}"
   key_name               = "${var.key_name}"
