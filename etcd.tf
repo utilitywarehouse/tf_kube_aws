@@ -40,7 +40,6 @@ resource "aws_instance" "etcd" {
   instance_type          = "${var.etcd_instance_type}"
   user_data              = "${var.etcd_user_data[count.index]}"
   iam_instance_profile   = "${aws_iam_instance_profile.etcd.name}"
-  key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.etcd.id}"]
   subnet_id              = "${null_resource.etcd_address.*.triggers.subnet[count.index]}"
   private_ip             = "${null_resource.etcd_address.*.triggers.address[count.index]}"

@@ -48,7 +48,6 @@ resource "aws_launch_configuration" "worker" {
   iam_instance_profile = "${aws_iam_instance_profile.worker.name}"
   image_id             = "${var.containerlinux_ami_id}"
   instance_type        = "${var.worker_instance_type}"
-  key_name             = "${var.key_name}"
   security_groups      = ["${aws_security_group.worker.id}"]
   user_data            = "${var.worker_user_data}"
 
@@ -67,7 +66,6 @@ resource "aws_launch_configuration" "worker-spot" {
   image_id             = "${var.containerlinux_ami_id}"
   instance_type        = "${var.worker_instance_type}"
   spot_price           = "${var.worker_spot_instance_bid}"
-  key_name             = "${var.key_name}"
   security_groups      = ["${aws_security_group.worker.id}"]
   user_data            = "${var.worker_user_data}"
 

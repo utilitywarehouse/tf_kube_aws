@@ -31,7 +31,6 @@ module "aws_cluster" {
   route53_inaddr_arpa_zone_id    = "${aws_route53_zone.example-reverse.id}"
   private_subnet_ids             = "${aws_subnet.private.*.id}"
   public_subnet_ids              = "${aws_subnet.public.*.id}"
-  key_name                       = "${aws_key_pair.example.key_name}"
   ssh_security_group_ids         = ["${aws_security_group.ssh.id}"]
   cfssl_user_data                = "${module.ignition.cfssl}"
   etcd_user_data                 = "${module.ignition.etcd}"
