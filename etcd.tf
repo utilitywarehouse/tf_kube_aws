@@ -60,6 +60,26 @@ resource "aws_instance" "etcd" {
     "terraform.io/component", "${var.cluster_name}/etcd/${count.index}",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
+ 
+  provisioner "remote-exec" {
+    when   = "destroy"
+    inline = [
+      "sudo systemctl stop etcd-member",
+      "sudo umount /var/lib/etcd",
+    ]
+
+    connection {
+      bastion_host = "jumpbox.dev.uw.systems"
+      bastion_port = 50620
+      agent = true
+      host = "${null_resource.etcd_address.*.triggers.address[count.index]}"
+      type = "ssh"
+      user = "core"
+    }
+
+    on_failure = "fail"
+  }
+
 }
 
 resource "aws_ebs_volume" "etcd-data" {
