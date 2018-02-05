@@ -22,7 +22,8 @@ variable "private_subnet_ids" {
 }
 
 variable "key_name" {
-  description = "The name of the AWS Key Pair to be used when launching EC2 instances."
+  default     = ""
+  description = "The name of the AWS Key Pair to be used when launching EC2 instances. Default empty string will result in no key"
 }
 
 variable "ssh_security_group_ids" {
