@@ -21,10 +21,6 @@ variable "private_subnet_ids" {
   type        = "list"
 }
 
-variable "key_name" {
-  description = "The name of the AWS Key Pair to be used when launching EC2 instances."
-}
-
 variable "ssh_security_group_ids" {
   description = "The IDs of the Security Groups to open port 22 to."
   type        = "list"

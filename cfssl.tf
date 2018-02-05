@@ -37,7 +37,6 @@ resource "aws_instance" "cfssl" {
   instance_type          = "t2.micro"
   iam_instance_profile   = "${aws_iam_instance_profile.cfssl.name}"
   user_data              = "${var.cfssl_user_data}"
-  key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.cfssl.id}"]
   subnet_id              = "${null_resource.cfssl_address.triggers.subnet}"
   private_ip             = "${null_resource.cfssl_address.triggers.address}"
