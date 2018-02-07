@@ -59,7 +59,8 @@ resource "aws_instance" "cfssl" {
   )}"
 
   provisioner "remote-exec" {
-    when   = "destroy"
+    when = "destroy"
+
     inline = [
       "sudo systemctl stop cfssl-nginx.service",
       "sudo systemctl stop cfssl.service",
@@ -70,15 +71,14 @@ resource "aws_instance" "cfssl" {
     connection {
       bastion_host = "jumpbox.dev.uw.systems"
       bastion_port = 50620
-      agent = true
-      host = "${null_resource.cfssl_address.triggers.address}"
-      type = "ssh"
-      user = "core"
+      agent        = true
+      host         = "${null_resource.cfssl_address.triggers.address}"
+      type         = "ssh"
+      user         = "core"
     }
 
     on_failure = "fail"
   }
-
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
