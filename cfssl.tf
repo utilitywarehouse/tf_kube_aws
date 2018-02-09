@@ -57,28 +57,6 @@ resource "aws_instance" "cfssl" {
     "terraform.io/component", "${var.cluster_name}/cfssl",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
-
-  provisioner "remote-exec" {
-    when = "destroy"
-
-    inline = [
-      "sudo systemctl stop cfssl-nginx.service",
-      "sudo systemctl stop cfssl.service",
-      "sudo systemctl stop cfssl-restart.timer",
-      "sudo umount /var/lib/cfssl",
-    ]
-
-    connection {
-      bastion_host = "jumpbox.dev.uw.systems"
-      bastion_port = 50620
-      agent        = true
-      host         = "${null_resource.cfssl_address.triggers.address}"
-      type         = "ssh"
-      user         = "core"
-    }
-
-    on_failure = "fail"
-  }
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
@@ -98,6 +76,9 @@ resource "aws_volume_attachment" "cfssl-data" {
   device_name = "/dev/xvdf"
   volume_id   = "${aws_ebs_volume.cfssl-data.*.id[count.index]}"
   instance_id = "${aws_instance.cfssl.*.id[count.index]}"
+
+  // Skip destroying the attachment. In case of instance recreation the os will handle that for us.
+  skip_destroy = true
 }
 
 // VPC Security Group
