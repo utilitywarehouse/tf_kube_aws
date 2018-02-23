@@ -7,7 +7,7 @@ output "cfssl_ip" {
 }
 
 output "master_address" {
-  value = "${aws_route53_record.master-elb.name}"
+  value = "${aws_route53_record.master-lb.name}"
 }
 
 output "etcd_security_group_id" {
