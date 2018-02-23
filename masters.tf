@@ -78,7 +78,7 @@ resource "aws_autoscaling_group" "master" {
   max_size                  = "${var.master_instance_count}"
   min_size                  = "${var.master_instance_count}"
   vpc_zone_identifier       = ["${var.private_subnet_ids}"]
-  load_balancers            = ["${aws_elb.master.name}"]
+  target_group_arns         = ["${aws_lb_target_group.master443.arn}"]
   default_cooldown          = 60
 
   tags = [
@@ -101,34 +101,43 @@ resource "aws_autoscaling_group" "master" {
   ]
 }
 
-// ELBs
-resource "aws_elb" "master" {
-  name            = "${var.cluster_name}-master-elb"
-  subnets         = ["${var.public_subnet_ids}"]
-  security_groups = ["${aws_security_group.master-elb.id}"]
+resource "aws_lb" "master" {
+  name               = "${var.cluster_name}-master-lb"
+  load_balancer_type = "network"
+  internal           = false
+  subnets            = ["${var.public_subnet_ids}"]
 
-  cross_zone_load_balancing = true
-  idle_timeout              = 3600
+  idle_timeout = 3600
+
+  tags = "${map(
+    "Name" , "${var.cluster_name}-master-lb",
+    "kubernetes.io/cluster/${var.cluster_name}", "owned",
+  )}"
+}
+
+resource "aws_lb_listener" "master443" {
+  load_balancer_arn = "${aws_lb.master.arn}"
+  port              = "443"
+  protocol          = "TCP"
+
+  default_action {
+    target_group_arn = "${aws_lb_target_group.master443.arn}"
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_target_group" "master443" {
+  name     = "${var.cluster_name}-master443"
+  vpc_id   = "${var.vpc_id}"
+  port     = 443
+  protocol = "TCP"
 
   health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 3
-    target              = "TCP:443"
-    interval            = 30
+    protocol = "TCP"
+    port     = 443
   }
 
-  listener {
-    instance_port     = 443
-    instance_protocol = "tcp"
-    lb_port           = 443
-    lb_protocol       = "tcp"
-  }
-
-  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
-    "Name", "master ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/master",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
 }
@@ -165,15 +174,6 @@ resource "aws_security_group_rule" "ingress-master-to-self" {
   self              = true
 }
 
-resource "aws_security_group_rule" "ingress-elb-https-to-master" {
-  type                     = "ingress"
-  from_port                = 443
-  to_port                  = 443
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.master-elb.id}"
-  security_group_id        = "${aws_security_group.master.id}"
-}
-
 resource "aws_security_group_rule" "ingress-worker-to-master" {
   type                     = "ingress"
   from_port                = 0
@@ -181,6 +181,15 @@ resource "aws_security_group_rule" "ingress-worker-to-master" {
   protocol                 = "-1"
   source_security_group_id = "${aws_security_group.worker.id}"
   security_group_id        = "${aws_security_group.master.id}"
+}
+
+resource "aws_security_group_rule" "ingress-world-to-master" {
+  security_group_id = "${aws_security_group.master.id}"
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "master-ssh" {
@@ -193,42 +202,11 @@ resource "aws_security_group_rule" "master-ssh" {
   security_group_id        = "${aws_security_group.master.id}"
 }
 
-resource "aws_security_group" "master-elb" {
-  name        = "${var.cluster_name}-master-external-elb"
-  description = "k8s master (apiserver) external elb"
-  vpc_id      = "${var.vpc_id}"
-
-  // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
-  tags = "${map(
-    "Name", "master elb ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/master",
-    "kubernetes.io/cluster/${var.cluster_name}", "owned",
-  )}"
-}
-
-resource "aws_security_group_rule" "egress-from-master-elb" {
-  type                     = "egress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = "${aws_security_group.master.id}"
-  security_group_id        = "${aws_security_group.master-elb.id}"
-}
-
-resource "aws_security_group_rule" "ingress-public-https-to-master-elb" {
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.master-elb.id}"
-}
-
 // Route53 records
-resource "aws_route53_record" "master-elb" {
+resource "aws_route53_record" "master-lb" {
   zone_id = "${var.route53_zone_id}"
   name    = "elb.master.${var.cluster_name}.${data.aws_route53_zone.main.name}"
   type    = "CNAME"
   ttl     = "30"
-  records = ["${aws_elb.master.dns_name}"]
+  records = ["${aws_lb.master.dns_name}"]
 }
