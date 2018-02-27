@@ -1,11 +1,3 @@
-resource "null_resource" "cfssl_address" {
-  triggers {
-    subnet            = "${var.private_subnet_ids[0]}"
-    availability_zone = "${data.aws_subnet.private.*.availability_zone[0]}"
-    address           = "${cidrhost(data.aws_subnet.private.*.cidr_block[0], 5)}"
-  }
-}
-
 // IAM instance role
 resource "aws_iam_role" "cfssl" {
   name = "${var.cluster_name}_cfssl"
@@ -39,8 +31,8 @@ resource "aws_instance" "cfssl" {
   user_data              = "${var.cfssl_user_data}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.cfssl.id}"]
-  subnet_id              = "${null_resource.cfssl_address.triggers.subnet}"
-  private_ip             = "${null_resource.cfssl_address.triggers.address}"
+  subnet_id              = "${var.private_subnet_ids[0]}"
+  private_ip             = "${var.cfssl_server_address}"
 
   lifecycle {
     ignore_changes = ["ami"]
@@ -60,7 +52,7 @@ resource "aws_instance" "cfssl" {
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
-  availability_zone = "${null_resource.cfssl_address.triggers.availability_zone}"
+  availability_zone = "${data.aws_subnet.private.*.availability_zone[0]}"
   size              = 5
   type              = "gp2"
 
