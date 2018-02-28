@@ -11,9 +11,17 @@ variable "vpc_id" {
   description = "The ID of the VPC to create resources in."
 }
 
+variable "public_subnet_count" {
+  description = "The number of public subnets"
+}
+
 variable "public_subnet_ids" {
   description = "A list of the available public subnets in which EC2 instances can be created."
   type        = "list"
+}
+
+variable "private_subnet_count" {
+  description = "The number of private subnets"
 }
 
 variable "private_subnet_ids" {
@@ -44,14 +52,22 @@ variable "route53_inaddr_arpa_zone_id" {
 }
 
 // cfssl server
+variable "cfssl_server_address" {
+  description = "The address of the cfssl server"
+}
+
 variable "cfssl_user_data" {
   description = "The user data to provide to the cfssl server."
 }
 
 // etcd nodes
 variable "etcd_instance_count" {
-  default     = "3"
   description = "The number of etcd instances to launch."
+}
+
+variable "etcd_addresses" {
+  description = "A list of ip adrresses for etcd instances"
+  type        = "list"
 }
 
 variable "etcd_instance_type" {

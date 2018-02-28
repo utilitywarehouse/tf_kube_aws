@@ -23,16 +23,6 @@ resource "aws_iam_instance_profile" "etcd" {
   role = "${aws_iam_role.etcd.name}"
 }
 
-resource "null_resource" "etcd_address" {
-  count = "${var.etcd_instance_count}"
-
-  triggers {
-    subnet            = "${var.private_subnet_ids[count.index % length(var.private_subnet_ids)]}"
-    availability_zone = "${data.aws_subnet.private.*.availability_zone[count.index % length(var.private_subnet_ids)]}"
-    address           = "${cidrhost(data.aws_subnet.private.*.cidr_block[count.index % length(var.private_subnet_ids)], 4 + (count.index / length(var.private_subnet_ids)))}"
-  }
-}
-
 // EC2 Instances
 resource "aws_instance" "etcd" {
   count                  = "${var.etcd_instance_count}"
@@ -42,8 +32,8 @@ resource "aws_instance" "etcd" {
   iam_instance_profile   = "${aws_iam_instance_profile.etcd.name}"
   key_name               = "${var.key_name}"
   vpc_security_group_ids = ["${aws_security_group.etcd.id}"]
-  subnet_id              = "${null_resource.etcd_address.*.triggers.subnet[count.index]}"
-  private_ip             = "${null_resource.etcd_address.*.triggers.address[count.index]}"
+  subnet_id              = "${var.private_subnet_ids[count.index % length(var.private_subnet_ids)]}"
+  private_ip             = "${var.etcd_addresses[count.index]}"
 
   lifecycle {
     ignore_changes = ["ami"]
@@ -64,7 +54,7 @@ resource "aws_instance" "etcd" {
 
 resource "aws_ebs_volume" "etcd-data" {
   count             = "${var.etcd_instance_count}"
-  availability_zone = "${null_resource.etcd_address.*.triggers.availability_zone[count.index]}"
+  availability_zone = "${data.aws_subnet.private.*.availability_zone[count.index % length(var.private_subnet_ids)]}"
   size              = "${var.etcd_data_volume_size}"
   type              = "gp2"
 

@@ -18,11 +18,11 @@ data "aws_vpc" "main" {
 }
 
 data "aws_subnet" "private" {
-  count = "${length(var.private_subnet_ids)}"
+  count = "${var.private_subnet_count}"
   id    = "${var.private_subnet_ids[count.index]}"
 }
 
 data "aws_subnet" "public" {
-  count = "${length(var.public_subnet_ids)}"
+  count = "${var.public_subnet_count}"
   id    = "${var.public_subnet_ids[count.index]}"
 }
