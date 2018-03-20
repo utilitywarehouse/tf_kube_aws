@@ -119,10 +119,10 @@ resource "aws_security_group_rule" "ingress-master-to-etcd" {
   security_group_id        = "${aws_security_group.etcd.id}"
 }
 
-resource "aws_security_group_rule" "ingress-worker-to-etcd-metrics-proxy" {
+resource "aws_security_group_rule" "ingress-worker-insecure-metrics" {
   type                     = "ingress"
-  from_port                = 2381
-  to_port                  = 2381
+  from_port                = 9378
+  to_port                  = 9378
   protocol                 = "tcp"
   source_security_group_id = "${aws_security_group.worker.id}"
   security_group_id        = "${aws_security_group.etcd.id}"
