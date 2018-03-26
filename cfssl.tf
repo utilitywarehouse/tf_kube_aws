@@ -26,7 +26,7 @@ resource "aws_iam_instance_profile" "cfssl" {
 // EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = "${var.containerlinux_ami_id}"
-  instance_type          = "t2.micro"
+  instance_type          = "m5.large"
   iam_instance_profile   = "${aws_iam_instance_profile.cfssl.name}"
   user_data              = "${var.cfssl_user_data}"
   key_name               = "${var.key_name}"
@@ -65,7 +65,11 @@ resource "aws_ebs_volume" "cfssl-data" {
 }
 
 resource "aws_volume_attachment" "cfssl-data" {
+  // This is a terraform workaround. The device_name is ignored by the
+  // instance, but terraform insists that it needs to be set. Actual device
+  // name will be something like: /dev/nvme1n1
   device_name = "/dev/xvdf"
+
   volume_id   = "${aws_ebs_volume.cfssl-data.*.id[count.index]}"
   instance_id = "${aws_instance.cfssl.*.id[count.index]}"
 
