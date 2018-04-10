@@ -17,3 +17,7 @@ output "worker_security_group_id" {
 output "cfssl_data_volumeid" {
   value = "${join("", split("-", aws_ebs_volume.cfssl-data.id))}"
 }
+
+output "etcd_data_volumeids" {
+  value = "${split(",", join("", split("-", join(",", aws_ebs_volume.etcd-data.*.id))))}"
+}
