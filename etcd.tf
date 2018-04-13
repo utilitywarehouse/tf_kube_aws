@@ -75,6 +75,7 @@ resource "aws_volume_attachment" "etcd-data" {
   // instance, but terraform insists that it needs to be set. Actual device
   // name will be something like: /dev/nvme1n1
   device_name = "/dev/xvdf"
+
   volume_id   = "${aws_ebs_volume.etcd-data.*.id[count.index]}"
   instance_id = "${aws_instance.etcd.*.id[count.index]}"
 

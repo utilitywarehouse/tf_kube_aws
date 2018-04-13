@@ -19,5 +19,5 @@ output "cfssl_data_volumeid" {
 }
 
 output "etcd_data_volumeids" {
-  value = "${split(",", join("", split("-", join(",", aws_ebs_volume.etcd-data.*.id))))}"
+  value = "${split(",", replace(join(",", aws_ebs_volume.etcd-data.*.id), "-", ""))}"
 }
