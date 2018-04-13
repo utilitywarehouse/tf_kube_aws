@@ -116,7 +116,7 @@ variable "worker_spot_instance_bid" {
 }
 
 variable "worker_instance_type" {
-  default     = "m4.large"
+  default     = "m5.large"
   description = "The type of kubernetes worker instances to launch."
 }
 
