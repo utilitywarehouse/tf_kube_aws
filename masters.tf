@@ -80,6 +80,7 @@ resource "aws_autoscaling_group" "master" {
   vpc_zone_identifier       = ["${var.private_subnet_ids}"]
   target_group_arns         = ["${aws_lb_target_group.master443.arn}"]
   default_cooldown          = 60
+  termination_policies      = "OldestInstance"
 
   tags = [
     {

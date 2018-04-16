@@ -94,6 +94,7 @@ resource "aws_autoscaling_group" "worker" {
   load_balancers            = ["${var.worker_elb_names}"]
   target_group_arns         = ["${var.worker_target_group_arns}"]
   default_cooldown          = 60
+  termination_policies      = "OldestInstance"
 
   tags = [
     {
@@ -128,6 +129,7 @@ resource "aws_autoscaling_group" "worker-spot" {
   load_balancers            = ["${var.worker_elb_names}"]
   target_group_arns         = ["${var.worker_target_group_arns}"]
   default_cooldown          = 60
+  termination_policies      = "OldestInstance"
 
   tags = [
     {
