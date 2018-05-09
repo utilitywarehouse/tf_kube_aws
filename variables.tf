@@ -60,6 +60,11 @@ variable "cfssl_user_data" {
   description = "The user data to provide to the cfssl server."
 }
 
+variable "cfssl_data_device_name" {
+  description = "Device name to use for the cfssl data volume"
+  default     = "xvdf"
+}
+
 // etcd nodes
 variable "etcd_instance_count" {
   description = "The number of etcd instances to launch."

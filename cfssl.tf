@@ -26,7 +26,7 @@ resource "aws_iam_instance_profile" "cfssl" {
 // EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = "${var.containerlinux_ami_id}"
-  instance_type          = "m5.large"
+  instance_type          = "t2.nano"
   iam_instance_profile   = "${aws_iam_instance_profile.cfssl.name}"
   user_data              = "${var.cfssl_user_data}"
   key_name               = "${var.key_name}"
@@ -41,6 +41,10 @@ resource "aws_instance" "cfssl" {
   root_block_device = {
     volume_type = "gp2"
     volume_size = 5
+  }
+
+  credit_specification {
+    cpu_credits = "unlimited"
   }
 
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
@@ -68,7 +72,7 @@ resource "aws_volume_attachment" "cfssl-data" {
   // This is a terraform workaround. The device_name is ignored by the
   // instance, but terraform insists that it needs to be set. Actual device
   // name will be something like: /dev/nvme1n1
-  device_name = "/dev/xvdf"
+  device_name = "/dev/${var.cfssl_data_device_name}"
 
   volume_id   = "${aws_ebs_volume.cfssl-data.*.id[count.index]}"
   instance_id = "${aws_instance.cfssl.*.id[count.index]}"

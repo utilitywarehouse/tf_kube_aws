@@ -15,7 +15,7 @@ output "worker_security_group_id" {
 }
 
 output "cfssl_data_volumeid" {
-  value = "${join("", split("-", aws_ebs_volume.cfssl-data.id))}"
+  value = "${var.cfssl_data_device_name}"
 }
 
 output "etcd_data_volumeids" {
