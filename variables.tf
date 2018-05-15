@@ -60,6 +60,11 @@ variable "cfssl_user_data" {
   description = "The user data to provide to the cfssl server."
 }
 
+variable "cfssl_data_device_name" {
+  description = "Device name to use for the cfssl data volume"
+  default     = "xvdf"
+}
+
 // etcd nodes
 variable "etcd_instance_count" {
   description = "The number of etcd instances to launch."
@@ -72,7 +77,7 @@ variable "etcd_addresses" {
 
 variable "etcd_instance_type" {
   default     = "t2.small"
-  description = "The type of etcd instances to launch."
+  description = "The type of etcd instances to launch. Must be of the t2 family"
 }
 
 variable "etcd_user_data" {
@@ -83,6 +88,11 @@ variable "etcd_user_data" {
 variable "etcd_data_volume_size" {
   description = "The size (in GB) of the data volumes used in etcd nodes."
   default     = "5"
+}
+
+variable "etcd_data_device_name" {
+  description = "Device name to use for the etcd data volume"
+  default     = "xvdf"
 }
 
 // master nodes

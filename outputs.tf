@@ -15,9 +15,17 @@ output "worker_security_group_id" {
 }
 
 output "cfssl_data_volumeid" {
-  value = "${join("", split("-", aws_ebs_volume.cfssl-data.id))}"
+  value = "${var.cfssl_data_device_name}"
+}
+
+data "null_data_source" "etcd_data_volumeids" {
+  count = "${var.etcd_instance_count}"
+
+  inputs = {
+    name = "${var.etcd_data_device_name}"
+  }
 }
 
 output "etcd_data_volumeids" {
-  value = "${split(",", replace(join(",", aws_ebs_volume.etcd-data.*.id), "-", ""))}"
+  value = "${data.null_data_source.etcd_data_volumeids.*.outputs.name}"
 }
