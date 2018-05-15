@@ -44,22 +44,12 @@ resource "aws_instance" "etcd" {
     volume_size = 10
   }
 
-  credit_specification {
-    cpu_credits = "unlimited"
-  }
-
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = "${map(
     "Name", "etcd ${var.cluster_name} ${count.index}",
     "terraform.io/component", "${var.cluster_name}/etcd/${count.index}",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
   )}"
-}
-
-resource "null_resource" "t2-assertion" {
-  count = "${"t2" == element(split(".", var.etcd_instance_type), 0) ? 0 : 1}"
-
-  "ERROR: var.etcd_instance_type must be a t2 family type " = true
 }
 
 resource "aws_ebs_volume" "etcd-data" {
@@ -79,8 +69,13 @@ resource "aws_ebs_volume" "etcd-data" {
 }
 
 resource "aws_volume_attachment" "etcd-data" {
-  count       = "${var.etcd_instance_count}"
-  device_name = "/dev/${var.etcd_data_device_name}"
+  count = "${var.etcd_instance_count}"
+
+  // This is a terraform workaround. The device_name is ignored by the
+  // instance, but terraform insists that it needs to be set. Actual device
+  // name will be something like: /dev/nvme1n1
+  device_name = "/dev/xvdf"
+
   volume_id   = "${aws_ebs_volume.etcd-data.*.id[count.index]}"
   instance_id = "${aws_instance.etcd.*.id[count.index]}"
 
