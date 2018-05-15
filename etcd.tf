@@ -52,12 +52,6 @@ resource "aws_instance" "etcd" {
   )}"
 }
 
-resource "null_resource" "t2-assertion" {
-  count = "${"t2" == element(split(".", var.etcd_instance_type), 0) ? 0 : 1}"
-
-  "ERROR: var.etcd_instance_type must be a t2 family type " = true
-}
-
 resource "aws_ebs_volume" "etcd-data" {
   count             = "${var.etcd_instance_count}"
   availability_zone = "${data.aws_subnet.private.*.availability_zone[count.index % length(var.private_subnet_ids)]}"
