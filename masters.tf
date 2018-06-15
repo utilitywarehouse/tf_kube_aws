@@ -70,7 +70,7 @@ resource "aws_launch_configuration" "master" {
 
 resource "aws_autoscaling_group" "master" {
   name                      = "master ${var.cluster_name}"
-  desired_capacity          = "3"
+  desired_capacity          = "${var.master_instance_count}"
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
