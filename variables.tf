@@ -76,7 +76,7 @@ variable "etcd_addresses" {
 }
 
 variable "etcd_instance_type" {
-  default     = "t2.small"
+  default     = "t3.small"
   description = "The type of etcd instances to launch."
 }
 
@@ -97,7 +97,7 @@ variable "master_instance_count" {
 }
 
 variable "master_instance_type" {
-  default     = "t2.small"
+  default     = "t3.small"
   description = "The type of kubernetes master instances to launch."
 }
 

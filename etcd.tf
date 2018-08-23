@@ -36,7 +36,10 @@ resource "aws_instance" "etcd" {
   private_ip             = "${var.etcd_addresses[count.index]}"
 
   lifecycle {
-    ignore_changes = ["ami"]
+    ignore_changes = [
+      "ami",
+      "credit_specification.0.cpu_credits",
+    ]
   }
 
   root_block_device = {
