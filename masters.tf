@@ -1,6 +1,7 @@
 // IAM instance role
 resource "aws_iam_role" "master" {
   name = "${var.cluster_name}_master"
+  path = "${var.iam_path}"
 
   assume_role_policy = <<EOS
 {
