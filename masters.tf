@@ -27,7 +27,6 @@ resource "aws_iam_instance_profile" "master" {
 resource "aws_iam_role_policy" "master" {
   name = "${var.cluster_name}_master"
   role = "${aws_iam_role.master.id}"
-  path = "${var.iam_path}"
 
   policy = <<EOS
 {
