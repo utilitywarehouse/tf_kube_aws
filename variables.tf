@@ -56,7 +56,7 @@ variable "iam_path" {
   default     = "/system/"
 }
 
-variable "permission_boundary" {
+variable "permissions_boundary" {
   description = "permission_boudnary to apply to iam resources"
   default     = ""
 }
