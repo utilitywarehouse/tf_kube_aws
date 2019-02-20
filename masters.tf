@@ -102,6 +102,25 @@ EOS
 
 // EC2 AutoScaling Group
 resource "aws_launch_configuration" "master" {
+  iam_instance_profile = "${aws_iam_instance_profile.master.name}"
+  image_id             = "${var.containerlinux_ami_id}"
+  instance_type        = "${var.master_instance_type}"
+  key_name             = "${var.key_name}"
+  security_groups      = ["${aws_security_group.master.id}"]
+  user_data            = "${var.master_user_data}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  # Storage
+  root_block_device {
+    volume_type = "gp2"
+    volume_size = 50
+  }
+}
+
+resource "aws_launch_configuration" "master2" {
   iam_instance_profile = "${aws_iam_instance_profile.master2.name}"
   image_id             = "${var.containerlinux_ami_id}"
   instance_type        = "${var.master_instance_type}"
