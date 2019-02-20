@@ -55,8 +55,9 @@ EOS
 resource "aws_launch_configuration" "master" {
   iam_instance_profile = "${aws_iam_instance_profile.master.name}"
 
-  #image_id             = "${var.containerlinux_ami_id}"
-  image_id        = "ami-02d7f55d7813eca77"
+  image_id = "${var.containerlinux_ami_id}"
+
+  #image_id        = "ami-02d7f55d7813eca77"
   instance_type   = "${var.master_instance_type}"
   key_name        = "${var.key_name}"
   security_groups = ["${aws_security_group.master.id}"]
