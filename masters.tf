@@ -17,8 +17,9 @@ EOS
 }
 
 resource "aws_iam_role" "master2" {
-  name = "${var.cluster_name}_master2"
-  path = "${var.iam_path}"
+  name                 = "${var.cluster_name}_master2"
+  path                 = "${var.iam_path}"
+  permissions_boundary = "arn:aws:iam::${var.account_id}:policy/system/system-boundary"
 
   assume_role_policy = <<EOS
 {
