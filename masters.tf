@@ -1,6 +1,23 @@
 // IAM instance role
 resource "aws_iam_role" "master" {
   name = "${var.cluster_name}_master"
+
+  assume_role_policy = <<EOS
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "ec2.amazonaws.com" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOS
+}
+
+resource "aws_iam_role" "master2" {
+  name = "${var.cluster_name}_master2"
   path = "${var.iam_path}"
 
   assume_role_policy = <<EOS
@@ -20,6 +37,12 @@ EOS
 resource "aws_iam_instance_profile" "master" {
   name = "${var.cluster_name}-master"
   role = "${aws_iam_role.master.name}"
+}
+
+resource "aws_iam_instance_profile" "master2" {
+  name = "${var.cluster_name}-master2"
+  role = "${aws_iam_role.master2.name}"
+  path = "${var.iam_path}"
 }
 
 resource "aws_iam_role_policy" "master" {
@@ -49,9 +72,36 @@ resource "aws_iam_role_policy" "master" {
 EOS
 }
 
+resource "aws_iam_role_policy" "master2" {
+  name = "${var.cluster_name}_master2"
+  role = "${aws_iam_role.master2.id}"
+
+  policy = <<EOS
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "ec2:*"
+      ],
+      "Effect": "Allow",
+      "Resource": [ "*" ]
+    },
+    {
+      "Action": [
+        "elasticloadbalancing:DescribeLoadBalancers"
+      ],
+      "Effect": "Allow",
+      "Resource": [ "*" ]
+    }
+  ]
+}
+EOS
+}
+
 // EC2 AutoScaling Group
 resource "aws_launch_configuration" "master" {
-  iam_instance_profile = "${aws_iam_instance_profile.master.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.master2.name}"
   image_id             = "${var.containerlinux_ami_id}"
   instance_type        = "${var.master_instance_type}"
   key_name             = "${var.key_name}"
