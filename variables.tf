@@ -56,6 +56,10 @@ variable "iam_path" {
   default     = "/system/"
 }
 
+variable "account_id" {
+  description = "AWS account id where the resources should be created"
+}
+
 // cfssl server
 variable "cfssl_server_address" {
   description = "The address of the cfssl server"
