@@ -56,8 +56,9 @@ variable "iam_path" {
   default     = "/system/"
 }
 
-variable "account_id" {
-  description = "AWS account id where the resources should be created"
+variable "permission_boundary" {
+  description = "permission_boudnary to apply to iam resources"
+  default     = ""
 }
 
 // cfssl server

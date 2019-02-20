@@ -1,25 +1,8 @@
 // IAM instance role
 resource "aws_iam_role" "master" {
-  name = "${var.cluster_name}_master"
-
-  assume_role_policy = <<EOS
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": { "Service": "ec2.amazonaws.com" },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOS
-}
-
-resource "aws_iam_role" "master2" {
-  name                 = "${var.cluster_name}_master2"
+  name                 = "${var.cluster_name}_master"
   path                 = "${var.iam_path}"
-  permissions_boundary = "arn:aws:iam::${var.account_id}:policy/system/system-boundary"
+  permissions_boundary = "${var.permissions_boundary}"
 
   assume_role_policy = <<EOS
 {
@@ -38,44 +21,13 @@ EOS
 resource "aws_iam_instance_profile" "master" {
   name = "${var.cluster_name}-master"
   role = "${aws_iam_role.master.name}"
-}
-
-resource "aws_iam_instance_profile" "master2" {
-  name = "${var.cluster_name}-master2"
-  role = "${aws_iam_role.master2.name}"
   path = "${var.iam_path}"
 }
 
 resource "aws_iam_role_policy" "master" {
   name = "${var.cluster_name}_master"
   role = "${aws_iam_role.master.id}"
-
-  policy = <<EOS
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "ec2:*"
-      ],
-      "Effect": "Allow",
-      "Resource": [ "*" ]
-    },
-    {
-      "Action": [
-        "elasticloadbalancing:DescribeLoadBalancers"
-      ],
-      "Effect": "Allow",
-      "Resource": [ "*" ]
-    }
-  ]
-}
-EOS
-}
-
-resource "aws_iam_role_policy" "master2" {
-  name = "${var.cluster_name}_master2"
-  role = "${aws_iam_role.master2.id}"
+  path = "${var.iam_path}"
 
   policy = <<EOS
 {
@@ -103,25 +55,6 @@ EOS
 // EC2 AutoScaling Group
 resource "aws_launch_configuration" "master" {
   iam_instance_profile = "${aws_iam_instance_profile.master.name}"
-  image_id             = "${var.containerlinux_ami_id}"
-  instance_type        = "${var.master_instance_type}"
-  key_name             = "${var.key_name}"
-  security_groups      = ["${aws_security_group.master.id}"]
-  user_data            = "${var.master_user_data}"
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  # Storage
-  root_block_device {
-    volume_type = "gp2"
-    volume_size = 50
-  }
-}
-
-resource "aws_launch_configuration" "master2" {
-  iam_instance_profile = "${aws_iam_instance_profile.master2.name}"
   image_id             = "${var.containerlinux_ami_id}"
   instance_type        = "${var.master_instance_type}"
   key_name             = "${var.key_name}"
