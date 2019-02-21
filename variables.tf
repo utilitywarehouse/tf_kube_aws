@@ -53,7 +53,7 @@ variable "route53_inaddr_arpa_zone_id" {
 
 variable "iam_path" {
   description = "path where iam resources should be created"
-  default     = "/system/"
+  default     = "/"
 }
 
 variable "permissions_boundary" {
