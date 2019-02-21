@@ -1,6 +1,8 @@
 // IAM instance role
 resource "aws_iam_role" "worker" {
-  name = "${var.cluster_name}_worker"
+  name                 = "${var.cluster_name}_worker"
+  path                 = "${var.iam_path}"
+  permissions_boundary = "${var.permissions_boundary}"
 
   assume_role_policy = <<EOS
 {
@@ -21,6 +23,7 @@ EOS
 resource "aws_iam_instance_profile" "worker" {
   name = "${var.cluster_name}-worker"
   role = "${aws_iam_role.worker.name}"
+  path = "${var.iam_path}"
 }
 
 resource "aws_iam_role_policy" "worker" {

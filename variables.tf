@@ -51,6 +51,16 @@ variable "route53_inaddr_arpa_zone_id" {
   description = "The ID of the Route53 Zone to add pointer records to."
 }
 
+variable "iam_path" {
+  description = "path where iam resources should be created"
+  default     = "/"
+}
+
+variable "permissions_boundary" {
+  description = "permission_boudnary to apply to iam resources"
+  default     = ""
+}
+
 // cfssl server
 variable "cfssl_server_address" {
   description = "The address of the cfssl server"
