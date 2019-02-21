@@ -1,6 +1,8 @@
 // IAM instance role
 resource "aws_iam_role" "etcd" {
-  name = "${var.cluster_name}_etcd"
+  name                 = "${var.cluster_name}_etcd"
+  path                 = "${var.iam_path}"
+  permissions_boundary = "${var.permissions_boundary}"
 
   assume_role_policy = <<EOS
 {
@@ -21,6 +23,7 @@ EOS
 resource "aws_iam_instance_profile" "etcd" {
   name = "${var.cluster_name}-etcd"
   role = "${aws_iam_role.etcd.name}"
+  path = "${var.iam_path}"
 }
 
 // EC2 Instances
