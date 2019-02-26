@@ -1,6 +1,6 @@
 // IAM instance role
 resource "aws_iam_role" "cfssl" {
-  name                 = "${var.cluster_name}_cfssl"
+  name                 = "${var.iam_prefix}${var.cluster_name}_cfssl"
   path                 = "${var.iam_path}"
   permissions_boundary = "${var.permissions_boundary}"
 
@@ -21,7 +21,7 @@ EOS
 }
 
 resource "aws_iam_instance_profile" "cfssl" {
-  name = "${var.cluster_name}-cfssl"
+  name = "${var.iam_prefix}${var.cluster_name}-cfssl"
   role = "${aws_iam_role.cfssl.name}"
   path = "${var.iam_path}"
 }
