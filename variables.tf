@@ -153,3 +153,7 @@ variable "worker_target_group_arns" {
   description = "A list of ALB Target Group ARNs to register the worker instances with."
   type        = "list"
 }
+
+locals {
+  iam_prefix = "${var.iam_prefix}${var.iam_prefix == "" ? "" : "-"}"
+}
