@@ -1,6 +1,6 @@
 // IAM instance role
 resource "aws_iam_role" "etcd" {
-  name                 = "${var.iam_prefix}${var.cluster_name}_etcd"
+  name                 = "${var.iam_prefix}${var.cluster_name}-etcd"
   path                 = "${var.iam_path}"
   permissions_boundary = "${var.permissions_boundary}"
 

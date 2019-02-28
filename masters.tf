@@ -1,6 +1,6 @@
 // IAM instance role
 resource "aws_iam_role" "master" {
-  name                 = "${var.iam_prefix}${var.cluster_name}_master"
+  name                 = "${var.iam_prefix}${var.cluster_name}-master"
   path                 = "${var.iam_path}"
   permissions_boundary = "${var.permissions_boundary}"
 
