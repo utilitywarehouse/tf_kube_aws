@@ -56,6 +56,11 @@ variable "iam_path" {
   default     = "/"
 }
 
+variable "iam_prefix" {
+  description = "prefix to added to iam resources names"
+  default     = ""
+}
+
 variable "permissions_boundary" {
   description = "permission_boudnary to apply to iam resources"
   default     = ""
