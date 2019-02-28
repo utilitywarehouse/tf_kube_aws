@@ -1,6 +1,6 @@
 // IAM instance role
 resource "aws_iam_role" "etcd" {
-  name                 = "${locals.iam_prefix}${var.cluster_name}-etcd"
+  name                 = "${local.iam_prefix}${var.cluster_name}-etcd"
   path                 = "${var.iam_path}"
   permissions_boundary = "${var.permissions_boundary}"
 
@@ -21,7 +21,7 @@ EOS
 }
 
 resource "aws_iam_instance_profile" "etcd" {
-  name = "${locals.iam_prefix}${var.cluster_name}-etcd"
+  name = "${local.iam_prefix}${var.cluster_name}-etcd"
   role = "${aws_iam_role.etcd.name}"
   path = "${var.iam_path}"
 }

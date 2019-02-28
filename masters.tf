@@ -1,6 +1,6 @@
 // IAM instance role
 resource "aws_iam_role" "master" {
-  name                 = "${locals.iam_prefix}${var.cluster_name}-master"
+  name                 = "${local.iam_prefix}${var.cluster_name}-master"
   path                 = "${var.iam_path}"
   permissions_boundary = "${var.permissions_boundary}"
 
@@ -19,13 +19,13 @@ EOS
 }
 
 resource "aws_iam_instance_profile" "master" {
-  name = "${locals.iam_prefix}${var.cluster_name}-master"
+  name = "${local.iam_prefix}${var.cluster_name}-master"
   role = "${aws_iam_role.master.name}"
   path = "${var.iam_path}"
 }
 
 resource "aws_iam_role_policy" "master" {
-  name = "${locals.iam_prefix}${var.cluster_name}-master"
+  name = "${local.iam_prefix}${var.cluster_name}-master"
   role = "${aws_iam_role.master.id}"
 
   policy = <<EOS

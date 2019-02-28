@@ -1,6 +1,6 @@
 // IAM instance role
 resource "aws_iam_role" "worker" {
-  name                 = "${locals.iam_prefix}${var.cluster_name}-worker"
+  name                 = "${local.iam_prefix}${var.cluster_name}-worker"
   path                 = "${var.iam_path}"
   permissions_boundary = "${var.permissions_boundary}"
 
@@ -21,13 +21,13 @@ EOS
 }
 
 resource "aws_iam_instance_profile" "worker" {
-  name = "${locals.iam_prefix}${var.cluster_name}-worker"
+  name = "${local.iam_prefix}${var.cluster_name}-worker"
   role = "${aws_iam_role.worker.name}"
   path = "${var.iam_path}"
 }
 
 resource "aws_iam_role_policy" "worker" {
-  name = "${locals.iam_prefix}${var.cluster_name}-worker"
+  name = "${local.iam_prefix}${var.cluster_name}-worker"
   role = "${aws_iam_role.worker.id}"
 
   policy = <<EOS
