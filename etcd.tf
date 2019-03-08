@@ -159,7 +159,7 @@ resource "aws_security_group_rule" "etcd-ssh" {
 resource "aws_route53_record" "etcd-all" {
   zone_id = "${var.route53_zone_id}"
   count   = 1
-  name    = "etcd.${var.cluster_name}.${data.aws_route53_zone.main.name}"
+  name    = "etcd.${var.role}.${data.aws_route53_zone.main.name}"
   type    = "A"
   ttl     = "30"
   records = ["${aws_instance.etcd.*.private_ip}"]
@@ -168,7 +168,7 @@ resource "aws_route53_record" "etcd-all" {
 resource "aws_route53_record" "etcd-by-instance" {
   count   = "${var.etcd_instance_count}"
   zone_id = "${var.route53_zone_id}"
-  name    = "${count.index}.etcd.${var.cluster_name}.${data.aws_route53_zone.main.name}"
+  name    = "${count.index}.etcd.${var.role}.${data.aws_route53_zone.main.name}"
   type    = "A"
   ttl     = "30"
   records = ["${aws_instance.etcd.*.private_ip[count.index]}"]

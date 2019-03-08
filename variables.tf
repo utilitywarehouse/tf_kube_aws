@@ -3,6 +3,11 @@ variable "region" {
   description = "The AWS region to deploy the cluster in."
 }
 
+variable "role" {
+  description = "Role name for the components created. Will be used in dns names. Default k8s"
+  default     = "k8s"
+}
+
 variable "cluster_name" {
   description = "And identifier for the cluster."
 }
