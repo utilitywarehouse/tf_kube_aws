@@ -7,6 +7,11 @@ variable "cluster_name" {
   description = "And identifier for the cluster."
 }
 
+variable "cluster_subdomain" {
+  description = "A subdomain cluster components dns records"
+  default     = "k8s"
+}
+
 variable "vpc_id" {
   description = "The ID of the VPC to create resources in."
 }

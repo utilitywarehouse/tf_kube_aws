@@ -208,7 +208,7 @@ resource "aws_security_group_rule" "master-ssh" {
 // Route53 records
 resource "aws_route53_record" "master-lb" {
   zone_id = "${var.route53_zone_id}"
-  name    = "elb.master.${var.cluster_name}.${data.aws_route53_zone.main.name}"
+  name    = "elb.master.${var.cluster_subdomain}.${data.aws_route53_zone.main.name}"
   type    = "CNAME"
   ttl     = "30"
   records = ["${aws_lb.master.dns_name}"]

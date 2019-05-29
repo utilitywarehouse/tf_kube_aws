@@ -25,6 +25,7 @@ module "aws_cluster" {
 
   region                         = "eu-west-1"
   cluster_name                   = "example-kube"
+  cluster_subdomain              = "k8s"
   vpc_id                         = "${aws_vpc.example.id}"
   containerlinux_ami_id          = "ami-xxxxxxxxx"
   route53_zone_id                = "${aws_route53_zone.example.id}"
