@@ -66,8 +66,6 @@ resource "aws_ebs_volume" "etcd-data" {
     "Name", "etcd ${var.cluster_name} data vol ${count.index}",
     "terraform.io/component", "${var.cluster_name}/etcd/${count.index}",
     "kubernetes.io/cluster/${var.cluster_name}", "owned",
-    "SnapshotManager", "true",
-    "SnapshotRetentionDays", "3",
   )}"
 }
 
