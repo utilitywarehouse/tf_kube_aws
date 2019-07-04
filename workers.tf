@@ -1,8 +1,8 @@
 // IAM instance role
 resource "aws_iam_role" "worker" {
   name                 = "${local.iam_prefix}${var.cluster_name}-worker"
-  path                 = "${var.iam_path}"
-  permissions_boundary = "${var.permissions_boundary}"
+  path                 = var.iam_path
+  permissions_boundary = var.permissions_boundary
 
   assume_role_policy = <<EOS
 {
@@ -22,13 +22,13 @@ EOS
 
 resource "aws_iam_instance_profile" "worker" {
   name = "${local.iam_prefix}${var.cluster_name}-worker"
-  role = "${aws_iam_role.worker.name}"
-  path = "${var.iam_path}"
+  role = aws_iam_role.worker.name
+  path = var.iam_path
 }
 
 resource "aws_iam_role_policy" "worker" {
   name = "${local.iam_prefix}${var.cluster_name}-worker"
-  role = "${aws_iam_role.worker.id}"
+  role = aws_iam_role.worker.id
 
   policy = <<EOS
 {
@@ -48,12 +48,12 @@ EOS
 
 // EC2 AutoScaling groups
 resource "aws_launch_configuration" "worker" {
-  iam_instance_profile = "${aws_iam_instance_profile.worker.name}"
-  image_id             = "${var.containerlinux_ami_id}"
-  instance_type        = "${var.worker_instance_type}"
-  key_name             = "${var.key_name}"
-  security_groups      = ["${aws_security_group.worker.id}"]
-  user_data            = "${var.worker_user_data}"
+  iam_instance_profile = aws_iam_instance_profile.worker.name
+  image_id             = var.containerlinux_ami_id
+  instance_type        = var.worker_instance_type
+  key_name             = var.key_name
+  security_groups      = [aws_security_group.worker.id]
+  user_data            = var.worker_user_data
 
   lifecycle {
     create_before_destroy = true
@@ -66,13 +66,13 @@ resource "aws_launch_configuration" "worker" {
 }
 
 resource "aws_launch_configuration" "worker-spot" {
-  iam_instance_profile = "${aws_iam_instance_profile.worker.name}"
-  image_id             = "${var.containerlinux_ami_id}"
-  instance_type        = "${var.worker_instance_type}"
-  spot_price           = "${var.worker_spot_instance_bid}"
-  key_name             = "${var.key_name}"
-  security_groups      = ["${aws_security_group.worker.id}"]
-  user_data            = "${var.worker_user_data}"
+  iam_instance_profile = aws_iam_instance_profile.worker.name
+  image_id             = var.containerlinux_ami_id
+  instance_type        = var.worker_instance_type
+  spot_price           = var.worker_spot_instance_bid
+  key_name             = var.key_name
+  security_groups      = [aws_security_group.worker.id]
+  user_data            = var.worker_user_data
 
   lifecycle {
     create_before_destroy = true
@@ -86,16 +86,16 @@ resource "aws_launch_configuration" "worker-spot" {
 
 resource "aws_autoscaling_group" "worker" {
   name                      = "worker ${var.cluster_name}"
-  desired_capacity          = "${var.worker_ondemand_instance_count}"
-  max_size                  = "${var.worker_ondemand_instance_count}"
-  min_size                  = "${var.worker_ondemand_instance_count}"
+  desired_capacity          = var.worker_ondemand_instance_count
+  max_size                  = var.worker_ondemand_instance_count
+  min_size                  = var.worker_ondemand_instance_count
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  launch_configuration      = "${aws_launch_configuration.worker.name}"
-  vpc_zone_identifier       = ["${var.private_subnet_ids}"]
-  load_balancers            = ["${var.worker_elb_names}"]
-  target_group_arns         = ["${var.worker_target_group_arns}"]
+  launch_configuration      = aws_launch_configuration.worker.name
+  vpc_zone_identifier       = var.private_subnet_ids
+  load_balancers            = var.worker_elb_names
+  target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
 
   tags = [
@@ -120,16 +120,16 @@ resource "aws_autoscaling_group" "worker" {
 
 resource "aws_autoscaling_group" "worker-spot" {
   name                      = "worker-spot ${var.cluster_name}"
-  desired_capacity          = "${var.worker_spot_instance_count}"
-  max_size                  = "${var.worker_spot_instance_count}"
-  min_size                  = "${var.worker_spot_instance_count}"
+  desired_capacity          = var.worker_spot_instance_count
+  max_size                  = var.worker_spot_instance_count
+  min_size                  = var.worker_spot_instance_count
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  launch_configuration      = "${aws_launch_configuration.worker-spot.name}"
-  vpc_zone_identifier       = ["${var.private_subnet_ids}"]
-  load_balancers            = ["${var.worker_elb_names}"]
-  target_group_arns         = ["${var.worker_target_group_arns}"]
+  launch_configuration      = aws_launch_configuration.worker-spot.name
+  vpc_zone_identifier       = var.private_subnet_ids
+  load_balancers            = var.worker_elb_names
+  target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
 
   tags = [
@@ -156,14 +156,14 @@ resource "aws_autoscaling_group" "worker-spot" {
 resource "aws_security_group" "worker" {
   name        = "${var.cluster_name}-worker"
   description = "k8s worker security group"
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
-  tags = "${map(
-    "Name", "worker ${var.cluster_name}",
-    "terraform.io/component", "${var.cluster_name}/worker",
-    "kubernetes.io/cluster/${var.cluster_name}", "owned",
-  )}"
+  tags = {
+    "Name"                                      = "worker ${var.cluster_name}"
+    "terraform.io/component"                    = "${var.cluster_name}/worker"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+  }
 }
 
 resource "aws_security_group_rule" "egress-from-worker" {
@@ -172,7 +172,7 @@ resource "aws_security_group_rule" "egress-from-worker" {
   to_port           = 0
   protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = "${aws_security_group.worker.id}"
+  security_group_id = aws_security_group.worker.id
 }
 
 resource "aws_security_group_rule" "ingress-worker-to-self" {
@@ -180,7 +180,7 @@ resource "aws_security_group_rule" "ingress-worker-to-self" {
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
-  security_group_id = "${aws_security_group.worker.id}"
+  security_group_id = aws_security_group.worker.id
   self              = true
 }
 
@@ -189,16 +189,16 @@ resource "aws_security_group_rule" "ingress-master-to-worker" {
   from_port                = 0
   to_port                  = 0
   protocol                 = "-1"
-  source_security_group_id = "${aws_security_group.master.id}"
-  security_group_id        = "${aws_security_group.worker.id}"
+  source_security_group_id = aws_security_group.master.id
+  security_group_id        = aws_security_group.worker.id
 }
 
 resource "aws_security_group_rule" "worker-ssh" {
-  count                    = "${length(var.ssh_security_group_ids)}"
+  count                    = length(var.ssh_security_group_ids)
   type                     = "ingress"
   from_port                = 22
   to_port                  = 22
   protocol                 = "tcp"
-  source_security_group_id = "${element(var.ssh_security_group_ids, count.index)}"
-  security_group_id        = "${aws_security_group.worker.id}"
+  source_security_group_id = element(var.ssh_security_group_ids, count.index)
+  security_group_id        = aws_security_group.worker.id
 }
