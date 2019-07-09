@@ -22,7 +22,7 @@ variable "public_subnet_count" {
 
 variable "public_subnet_ids" {
   description = "A list of the available public subnets in which EC2 instances can be created."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "private_subnet_count" {
@@ -31,7 +31,7 @@ variable "private_subnet_count" {
 
 variable "private_subnet_ids" {
   description = "A list of the available private subnets in which EC2 instances can be created."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "key_name" {
@@ -41,7 +41,7 @@ variable "key_name" {
 
 variable "ssh_security_group_ids" {
   description = "The IDs of the Security Groups to open port 22 to."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "containerlinux_ami_id" {
@@ -92,7 +92,7 @@ variable "etcd_instance_count" {
 
 variable "etcd_addresses" {
   description = "A list of ip adrresses for etcd instances"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "etcd_instance_type" {
@@ -102,7 +102,7 @@ variable "etcd_instance_type" {
 
 variable "etcd_user_data" {
   description = "A list of the user data to provide to the etcd instances. Must be the same length as etcd_instance_count."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "etcd_data_volume_size" {
@@ -151,12 +151,12 @@ variable "worker_user_data" {
 
 variable "worker_elb_names" {
   description = "A list of Classic ELB names to be attached to the worker autoscaling groups."
-  type        = "list"
+  type        = list(string)
 }
 
 variable "worker_target_group_arns" {
   description = "A list of ALB Target Group ARNs to register the worker instances with."
-  type        = "list"
+  type        = list(string)
 }
 
 locals {
