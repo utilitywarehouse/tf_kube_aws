@@ -24,31 +24,40 @@ resource "aws_iam_instance_profile" "master" {
   path = var.iam_path
 }
 
+data "aws_iam_policy_document" "master" {
+  statement {
+    actions = [
+      "ec2:*"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "elasticloadbalancing:DescribeLoadBalancers"
+    ]
+    resources = ["*"]
+  }
+
+  # https://github.com/kubernetes/kops/blob/master/pkg/model/iam/tests/iam_builder_master_strict.json#L158
+  statement {
+    actions = [
+      "kms:CreateGrant",
+      "kms:Decrypt",
+      "kms:DescribeKey",
+      "kms:Encrypt",
+      "kms:GenerateDataKey*",
+      "kms:ReEncrypt*"
+    ]
+    resources = var.master_kms_ebs_key_arns
+  }
+}
+
 resource "aws_iam_role_policy" "master" {
   name = "${local.iam_prefix}${var.cluster_name}-master"
   role = aws_iam_role.master.id
 
-  policy = <<EOS
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "ec2:*"
-      ],
-      "Effect": "Allow",
-      "Resource": [ "*" ]
-    },
-    {
-      "Action": [
-        "elasticloadbalancing:DescribeLoadBalancers"
-      ],
-      "Effect": "Allow",
-      "Resource": [ "*" ]
-    }
-  ]
-}
-EOS
+  policy = data.aws_iam_policy_document.master.json
 }
 
 // EC2 AutoScaling Group
