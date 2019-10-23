@@ -159,6 +159,12 @@ variable "worker_target_group_arns" {
   type        = list(string)
 }
 
+variable "master_kms_ebs_key_arns" {
+  default     = []
+  description = "KMS keys used by masters to manage EBS volumes. This should be the same value as `kmsKeyId` in the storageClass (https://kubernetes.io/docs/concepts/storage/storage-classes/#aws-ebs)"
+  type        = list(string)
+}
+
 locals {
   iam_prefix = "${var.iam_prefix}${var.iam_prefix == "" ? "" : "-"}"
 }
