@@ -26,6 +26,13 @@ resource "aws_iam_instance_profile" "cfssl" {
   path = var.iam_path
 }
 
+resource "aws_iam_role_policy" "cfssl" {
+  count  = var.cfssl_role_additional_permissions == "" ? 0 : 1
+  name   = "${local.iam_prefix}${var.cluster_name}-cfssl"
+  role   = aws_iam_role.cfssl.id
+  policy = var.cfssl_role_additional_permissions
+}
+
 // EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = var.containerlinux_ami_id
