@@ -25,6 +25,8 @@ resource "aws_iam_instance_profile" "master" {
 }
 
 data "aws_iam_policy_document" "master" {
+  source_json = var.master_role_additional_permissions
+
   statement {
     actions = [
       "ec2:*"
@@ -54,9 +56,8 @@ data "aws_iam_policy_document" "master" {
 }
 
 resource "aws_iam_role_policy" "master" {
-  name = "${local.iam_prefix}${var.cluster_name}-master"
-  role = aws_iam_role.master.id
-
+  name   = "${local.iam_prefix}${var.cluster_name}-master"
+  role   = aws_iam_role.master.id
   policy = data.aws_iam_policy_document.master.json
 }
 

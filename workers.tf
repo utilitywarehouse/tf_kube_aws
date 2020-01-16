@@ -26,24 +26,19 @@ resource "aws_iam_instance_profile" "worker" {
   path = var.iam_path
 }
 
-resource "aws_iam_role_policy" "worker" {
-  name = "${local.iam_prefix}${var.cluster_name}-worker"
-  role = aws_iam_role.worker.id
+data "aws_iam_policy_document" "worker" {
+  source_json = var.worker_role_additional_permissions
 
-  policy = <<EOS
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:DescribeInstances"
-      ],
-      "Resource": "*"
-    }
-  ]
+  statement {
+    actions   = ["ec2:DescribeInstances"]
+    resources = ["*"]
+  }
 }
-EOS
+
+resource "aws_iam_role_policy" "worker" {
+  name   = "${local.iam_prefix}${var.cluster_name}-worker"
+  role   = aws_iam_role.worker.id
+  policy = data.aws_iam_policy_document.worker.json
 }
 
 // EC2 AutoScaling groups

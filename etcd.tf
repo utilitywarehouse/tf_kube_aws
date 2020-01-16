@@ -26,6 +26,13 @@ resource "aws_iam_instance_profile" "etcd" {
   path = var.iam_path
 }
 
+resource "aws_iam_role_policy" "etcd" {
+  count  = var.etcd_role_additional_permissions == "" ? 0 : 1
+  name   = "${local.iam_prefix}${var.cluster_name}-etcd"
+  role   = aws_iam_role.etcd.id
+  policy = var.etcd_role_additional_permissions
+}
+
 // EC2 Instances
 resource "aws_instance" "etcd" {
   count                  = var.etcd_instance_count
