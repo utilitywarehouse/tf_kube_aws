@@ -1,3 +1,27 @@
+data "template_file" "cfssl" {
+  template = <<EOF
+{
+  "ignition": {
+    "version": "2.2.0",
+    "config": {
+      "replace": {
+        "source": "s3://${aws_s3_bucket.userdata.id}/cfssl-config-${sha1(var.cfssl_user_data)}.json",
+        "aws": {
+          "region": "${var.region}"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "aws_s3_bucket_object" "cfssl" {
+  bucket  = aws_s3_bucket.userdata.id
+  key     = "cfssl-config-${sha1(var.cfssl_user_data)}.json"
+  content = var.cfssl_user_data
+}
+
 // IAM instance role
 resource "aws_iam_role" "cfssl" {
   name                 = "${local.iam_prefix}${var.cluster_name}-cfssl"
@@ -26,11 +50,17 @@ resource "aws_iam_instance_profile" "cfssl" {
   path = var.iam_path
 }
 
+data "aws_iam_policy_document" "cfssl" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/cfssl-*"]
+  }
+}
+
 resource "aws_iam_role_policy" "cfssl" {
-  count  = var.cfssl_role_additional_permissions == "" ? 0 : 1
   name   = "${local.iam_prefix}${var.cluster_name}-cfssl"
   role   = aws_iam_role.cfssl.id
-  policy = var.cfssl_role_additional_permissions
+  policy = data.aws_iam_policy_document.cfssl.json
 }
 
 // EC2 Instance
@@ -38,7 +68,7 @@ resource "aws_instance" "cfssl" {
   ami                    = var.containerlinux_ami_id
   instance_type          = "t2.nano"
   iam_instance_profile   = aws_iam_instance_profile.cfssl.name
-  user_data              = var.cfssl_user_data
+  user_data              = data.template_file.cfssl.rendered
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.cfssl.id]
   subnet_id              = var.private_subnet_ids[0]

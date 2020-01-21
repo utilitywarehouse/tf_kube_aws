@@ -26,3 +26,15 @@ data "aws_subnet" "public" {
   count = var.public_subnet_count
   id    = var.public_subnet_ids[count.index]
 }
+
+resource "aws_s3_bucket" "userdata" {
+  bucket = "${var.bucket_prefix}-ignition-userdata-${var.cluster_name}"
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+}

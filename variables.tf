@@ -62,12 +62,17 @@ variable "iam_path" {
 }
 
 variable "iam_prefix" {
-  description = "prefix to added to iam resources names"
+  description = "prefix to be added to iam resources names"
   default     = ""
 }
 
 variable "permissions_boundary" {
   description = "permission_boudnary to apply to iam resources"
+  default     = ""
+}
+
+variable "bucket_prefix" {
+  description = "prefix to be added to the userdata bucket"
   default     = ""
 }
 
@@ -83,11 +88,6 @@ variable "cfssl_user_data" {
 variable "cfssl_data_device_name" {
   description = "Device name to use for the cfssl data volume"
   default     = "xvdf"
-}
-
-variable "cfssl_role_additional_permissions" {
-  default     = ""
-  description = "Additional permissions for the cfssl role"
 }
 
 // etcd nodes
@@ -115,11 +115,6 @@ variable "etcd_data_volume_size" {
   default     = "5"
 }
 
-variable "etcd_role_additional_permissions" {
-  default     = ""
-  description = "Additional permissions for the etcd role"
-}
-
 // master nodes
 variable "master_instance_count" {
   default     = "3"
@@ -133,11 +128,6 @@ variable "master_instance_type" {
 
 variable "master_user_data" {
   description = "The user data to provide to the kubernetes master instances."
-}
-
-variable "master_role_additional_permissions" {
-  default     = ""
-  description = "Additional permissions for the master role"
 }
 
 // worker nodes
@@ -162,11 +152,6 @@ variable "worker_instance_type" {
 
 variable "worker_user_data" {
   description = "The user data to provide to the kubernetes worker instances."
-}
-
-variable "worker_role_additional_permissions" {
-  default     = ""
-  description = "Additional permissions for the worker role"
 }
 
 variable "worker_elb_names" {

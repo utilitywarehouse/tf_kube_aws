@@ -1,3 +1,27 @@
+data "template_file" "worker" {
+  template = <<EOF
+{
+  "ignition": {
+    "version": "2.2.0",
+    "config": {
+      "replace": {
+        "source": "s3://${aws_s3_bucket.userdata.id}/worker-config-${sha1(var.worker_user_data)}.json",
+        "aws": {
+          "region": "${var.region}"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "aws_s3_bucket_object" "worker" {
+  bucket  = aws_s3_bucket.userdata.id
+  key     = "worker-config-${sha1(var.worker_user_data)}.json"
+  content = var.worker_user_data
+}
+
 // IAM instance role
 resource "aws_iam_role" "worker" {
   name                 = "${local.iam_prefix}${var.cluster_name}-worker"
@@ -27,11 +51,14 @@ resource "aws_iam_instance_profile" "worker" {
 }
 
 data "aws_iam_policy_document" "worker" {
-  source_json = var.worker_role_additional_permissions
-
   statement {
     actions   = ["ec2:DescribeInstances"]
     resources = ["*"]
+  }
+
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/worker-*"]
   }
 }
 
@@ -48,7 +75,7 @@ resource "aws_launch_configuration" "worker" {
   instance_type        = var.worker_instance_type
   key_name             = var.key_name
   security_groups      = [aws_security_group.worker.id]
-  user_data            = var.worker_user_data
+  user_data            = data.template_file.worker.rendered
 
   lifecycle {
     create_before_destroy = true

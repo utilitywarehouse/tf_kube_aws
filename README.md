@@ -1,6 +1,6 @@
 # tf_kube_aws
 
-This terraform module creates a kubernetes cluster in AWS. It's designed to synergise well with [tf_kube_ignition](https://github.com/utilitywarehouse/tf_kube_ignition).
+This terraform module creates a kubernetes cluster in AWS. It assumes [ignition](https://coreos.com/ignition) userdata and it's designed to synergise well with [tf_kube_ignition](https://github.com/utilitywarehouse/tf_kube_ignition).
 
 ## Input Variables
 

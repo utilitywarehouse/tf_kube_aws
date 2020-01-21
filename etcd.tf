@@ -1,3 +1,30 @@
+data "template_file" "etcd" {
+  count = length(var.etcd_user_data)
+
+  template = <<EOF
+{
+  "ignition": {
+    "version": "2.2.0",
+    "config": {
+      "replace": {
+        "source": "s3://${aws_s3_bucket.userdata.id}/etcd-config-${count.index}-${sha1(var.etcd_user_data[count.index])}.json",
+        "aws": {
+          "region": "${var.region}"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "aws_s3_bucket_object" "etcd" {
+  count   = length(var.etcd_user_data)
+  bucket  = aws_s3_bucket.userdata.id
+  key     = "etcd-config-${count.index}-${sha1(var.etcd_user_data[count.index])}.json"
+  content = var.etcd_user_data[count.index]
+}
+
 // IAM instance role
 resource "aws_iam_role" "etcd" {
   name                 = "${local.iam_prefix}${var.cluster_name}-etcd"
@@ -26,11 +53,17 @@ resource "aws_iam_instance_profile" "etcd" {
   path = var.iam_path
 }
 
+data "aws_iam_policy_document" "etcd" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/etcd-*"]
+  }
+}
+
 resource "aws_iam_role_policy" "etcd" {
-  count  = var.etcd_role_additional_permissions == "" ? 0 : 1
   name   = "${local.iam_prefix}${var.cluster_name}-etcd"
   role   = aws_iam_role.etcd.id
-  policy = var.etcd_role_additional_permissions
+  policy = data.aws_iam_policy_document.etcd.json
 }
 
 // EC2 Instances
@@ -38,7 +71,7 @@ resource "aws_instance" "etcd" {
   count                  = var.etcd_instance_count
   ami                    = var.containerlinux_ami_id
   instance_type          = var.etcd_instance_type
-  user_data              = var.etcd_user_data[count.index]
+  user_data              = data.template_file.etcd[count.index].rendered
   iam_instance_profile   = aws_iam_instance_profile.etcd.name
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.etcd.id]
