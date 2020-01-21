@@ -1,3 +1,27 @@
+data "template_file" "master" {
+  template = <<EOF
+{
+  "ignition": {
+    "version": "2.2.0",
+    "config": {
+      "replace": {
+        "source": "s3://${aws_s3_bucket.userdata.id}/master-config-${sha1(var.master_user_data)}.json",
+        "aws": {
+          "region": "${var.region}"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "aws_s3_bucket_object" "master" {
+  bucket  = aws_s3_bucket.userdata.id
+  key     = "master-config-${sha1(var.master_user_data)}.json"
+  content = var.master_user_data
+}
+
 // IAM instance role
 resource "aws_iam_role" "master" {
   name                 = "${local.iam_prefix}${var.cluster_name}-master"
@@ -25,8 +49,6 @@ resource "aws_iam_instance_profile" "master" {
 }
 
 data "aws_iam_policy_document" "master" {
-  source_json = var.master_role_additional_permissions
-
   statement {
     actions = [
       "ec2:*"
@@ -53,6 +75,13 @@ data "aws_iam_policy_document" "master" {
     ]
     resources = var.master_kms_ebs_key_arns
   }
+
+  statement {
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/master-*"]
+  }
 }
 
 resource "aws_iam_role_policy" "master" {
@@ -68,7 +97,7 @@ resource "aws_launch_configuration" "master" {
   instance_type        = var.master_instance_type
   key_name             = var.key_name
   security_groups      = [aws_security_group.master.id]
-  user_data            = var.master_user_data
+  user_data            = data.template_file.master.rendered
 
   lifecycle {
     create_before_destroy = true
