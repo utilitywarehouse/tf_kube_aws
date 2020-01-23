@@ -128,7 +128,7 @@ resource "aws_autoscaling_group" "worker" {
     },
     {
       key                 = "terraform.io/component"
-      value               = "${var.cluster_name}/master"
+      value               = "${var.cluster_name}/worker"
       propagate_at_launch = true
     },
     {
@@ -162,7 +162,7 @@ resource "aws_autoscaling_group" "worker-spot" {
     },
     {
       key                 = "terraform.io/component"
-      value               = "${var.cluster_name}/master"
+      value               = "${var.cluster_name}/worker-spot"
       propagate_at_launch = true
     },
     {
