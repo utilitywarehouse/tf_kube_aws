@@ -57,8 +57,11 @@ data "aws_iam_policy_document" "master" {
   }
 
   statement {
+    # https://docs.aws.amazon.com/IAM/latest/UserGuide/list_elasticloadbalancing.html
     actions = [
-      "elasticloadbalancing:DescribeLoadBalancers"
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:CreateLoadBalancer"
+      "elasticloadbalancing:DeleteLoadBalancer"
     ]
     resources = ["*"]
   }
