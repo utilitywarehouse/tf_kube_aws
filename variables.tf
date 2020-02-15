@@ -143,6 +143,7 @@ variable "worker_spot_instance_count" {
 
 variable "worker_spot_instance_bid" {
   description = "The price to bid for kubernetes worker spot instances."
+  default     = ""
 }
 
 variable "worker_instance_type" {
