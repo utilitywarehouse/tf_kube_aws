@@ -78,9 +78,9 @@ resource "aws_instance" "etcd" {
   subnet_id              = var.private_subnet_ids[count.index % length(var.private_subnet_ids)]
   private_ip             = var.etcd_addresses[count.index]
 
-  lifecycle {
-    ignore_changes = [ami]
-  }
+  # lifecycle {
+  #   ignore_changes = [ami]
+  # }
 
   root_block_device {
     volume_type = "gp2"

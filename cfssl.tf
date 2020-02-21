@@ -74,10 +74,6 @@ resource "aws_instance" "cfssl" {
   subnet_id              = var.private_subnet_ids[0]
   private_ip             = var.cfssl_server_address
 
-  lifecycle {
-    ignore_changes = [ami]
-  }
-
   root_block_device {
     volume_type = "gp2"
     volume_size = 5
