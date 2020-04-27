@@ -66,7 +66,7 @@ resource "aws_iam_role_policy" "cfssl" {
 // EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = var.containerlinux_ami_id
-  instance_type          = "t2.nano"
+  instance_type          = "t3a.micro"
   iam_instance_profile   = aws_iam_instance_profile.cfssl.name
   user_data              = data.template_file.cfssl.rendered
   key_name               = var.key_name
