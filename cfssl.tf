@@ -199,6 +199,15 @@ resource "aws_security_group_rule" "ingress-worker-to-cfssl-node-exporter" {
   security_group_id        = aws_security_group.cfssl.id
 }
 
+resource "aws_security_group_rule" "ingress-worker-to-cfssl-fluent-bit-exporter" {
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.cfssl.id
+}
+
 // Route53 records
 resource "aws_route53_record" "cfssl-instance" {
   zone_id = var.route53_zone_id
