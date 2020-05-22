@@ -56,6 +56,28 @@ data "aws_iam_policy_document" "worker" {
     resources = ["*"]
   }
 
+  # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/example-iam-policy.json
+  statement {
+    actions = [
+      "ec2:AttachVolume",
+      "ec2:CreateSnapshot",
+      "ec2:CreateTags",
+      "ec2:CreateVolume",
+      "ec2:DeleteSnapshot",
+      "ec2:DeleteTags",
+      "ec2:DeleteVolume",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeInstances", ## dup
+      "ec2:DescribeSnapshots",
+      "ec2:DescribeTags",
+      "ec2:DescribeVolumes",
+      "ec2:DescribeVolumesModifications",
+      "ec2:DetachVolume",
+      "ec2:ModifyVolume",
+    ]
+    resources = ["*"]
+  }
+
   statement {
     actions   = ["s3:GetObject"]
     resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/worker-*"]
