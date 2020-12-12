@@ -94,7 +94,7 @@ resource "aws_launch_configuration" "worker-spot" {
   spot_price           = var.worker_spot_instance_bid
   key_name             = var.key_name
   security_groups      = [aws_security_group.worker.id]
-  user_data            = var.worker_user_data
+  user_data            = data.template_file.worker.rendered
 
   lifecycle {
     create_before_destroy = true
