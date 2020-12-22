@@ -137,6 +137,11 @@ resource "aws_autoscaling_group" "worker" {
       value               = "owned"
       propagate_at_launch = true
     },
+    {
+      key                 = "owner"
+      value               = "system"
+      propagate_at_launch = true
+    },
   ]
 }
 
@@ -171,6 +176,11 @@ resource "aws_autoscaling_group" "worker-spot" {
       value               = "owned"
       propagate_at_launch = true
     },
+    {
+      key                 = "owner"
+      value               = "system"
+      propagate_at_launch = true
+    },
   ]
 }
 
@@ -185,6 +195,7 @@ resource "aws_security_group" "worker" {
     "Name"                                      = "worker ${var.cluster_name}"
     "terraform.io/component"                    = "${var.cluster_name}/worker"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 

@@ -92,6 +92,7 @@ resource "aws_instance" "etcd" {
     "Name"                                      = "etcd ${var.cluster_name} ${count.index}"
     "terraform.io/component"                    = "${var.cluster_name}/etcd/${count.index}"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 
@@ -106,6 +107,7 @@ resource "aws_ebs_volume" "etcd-data" {
     "Name"                                      = "etcd ${var.cluster_name} data vol ${count.index}"
     "terraform.io/component"                    = "${var.cluster_name}/etcd/${count.index}"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 
@@ -135,6 +137,7 @@ resource "aws_security_group" "etcd" {
     "Name"                                      = "etcd ${var.cluster_name}"
     "terraform.io/component"                    = "${var.cluster_name}/etcd"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 
