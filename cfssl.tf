@@ -92,6 +92,7 @@ resource "aws_instance" "cfssl" {
     "Name"                                      = "cfssl ${var.cluster_name}"
     "terraform.io/component"                    = "${var.cluster_name}/cfssl"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 
@@ -105,6 +106,7 @@ resource "aws_ebs_volume" "cfssl-data" {
     "Name"                                      = "cfssl ${var.cluster_name} data vol 0"
     "terraform.io/component"                    = "${var.cluster_name}/cfssl"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 
@@ -132,6 +134,7 @@ resource "aws_security_group" "cfssl" {
     "Name"                                      = "cfssl ${var.cluster_name}"
     "terraform.io/component"                    = "${var.cluster_name}/cfssl"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 

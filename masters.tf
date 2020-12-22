@@ -140,6 +140,11 @@ resource "aws_autoscaling_group" "master" {
       value               = "owned"
       propagate_at_launch = true
     },
+    {
+      key                 = "owner"
+      value               = "system"
+      propagate_at_launch = true
+    },
   ]
 }
 
@@ -195,6 +200,7 @@ resource "aws_security_group" "master" {
     "Name"                                      = "master ${var.cluster_name}"
     "terraform.io/component"                    = "${var.cluster_name}/master"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+    "owner"                                     = "system"
   }
 }
 
