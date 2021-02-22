@@ -2,7 +2,7 @@ data "template_file" "cfssl" {
   template = <<EOF
 {
   "ignition": {
-    "version": "2.2.0",
+    "version": "3.1.0",
     "config": {
       "replace": {
         "source": "s3://${aws_s3_bucket.userdata.id}/cfssl-config-${sha1(var.cfssl_user_data)}.json",

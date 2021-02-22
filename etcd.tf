@@ -4,7 +4,7 @@ data "template_file" "etcd" {
   template = <<EOF
 {
   "ignition": {
-    "version": "2.2.0",
+    "version": "3.1.0",
     "config": {
       "replace": {
         "source": "s3://${aws_s3_bucket.userdata.id}/etcd-config-${count.index}-${sha1(var.etcd_user_data[count.index])}.json",
