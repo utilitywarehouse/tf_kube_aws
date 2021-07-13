@@ -79,7 +79,7 @@ resource "aws_launch_configuration" "worker" {
 
   metadata_options {
     http_endpoint               = "enabled"
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
     http_put_response_hop_limit = 2
   }
 
