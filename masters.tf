@@ -124,7 +124,7 @@ resource "aws_autoscaling_group" "master" {
   force_delete              = true
   launch_configuration      = aws_launch_configuration.master.name
   max_size                  = var.master_instance_count
-  min_size                  = 3
+  min_size                  = var.master_instance_count
   vpc_zone_identifier       = var.private_subnet_ids
   target_group_arns         = [aws_lb_target_group.master443.arn]
   default_cooldown          = 60
