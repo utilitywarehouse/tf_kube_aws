@@ -99,6 +99,12 @@ resource "aws_launch_configuration" "master" {
   security_groups      = [aws_security_group.master.id]
   user_data            = data.template_file.master.rendered
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
+
   lifecycle {
     create_before_destroy = true
   }
