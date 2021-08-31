@@ -159,42 +159,6 @@ resource "aws_security_group_rule" "ingress-etcd-to-self" {
   self              = true
 }
 
-resource "aws_security_group_rule" "ingress-master-to-etcd" {
-  type                     = "ingress"
-  from_port                = 2379
-  to_port                  = 2379
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.master.id
-  security_group_id        = aws_security_group.etcd.id
-}
-
-resource "aws_security_group_rule" "ingress-worker-insecure-metrics" {
-  type                     = "ingress"
-  from_port                = 9378
-  to_port                  = 9378
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.worker.id
-  security_group_id        = aws_security_group.etcd.id
-}
-
-resource "aws_security_group_rule" "ingress-worker-to-etcd-node-exporter" {
-  type                     = "ingress"
-  from_port                = 9100
-  to_port                  = 9100
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.worker.id
-  security_group_id        = aws_security_group.etcd.id
-}
-
-resource "aws_security_group_rule" "ingress-worker-to-etcd-fluent-bit-exporter" {
-  type                     = "ingress"
-  from_port                = 8080
-  to_port                  = 8080
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.worker.id
-  security_group_id        = aws_security_group.etcd.id
-}
-
 resource "aws_security_group_rule" "etcd-ssh" {
   count                    = length(var.ssh_security_group_ids)
   type                     = "ingress"

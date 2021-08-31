@@ -76,20 +76,6 @@ variable "bucket_prefix" {
   default     = ""
 }
 
-// cfssl server
-variable "cfssl_server_address" {
-  description = "The address of the cfssl server"
-}
-
-variable "cfssl_user_data" {
-  description = "The user data to provide to the cfssl server."
-}
-
-variable "cfssl_data_device_name" {
-  description = "Device name to use for the cfssl data volume"
-  default     = "xvdf"
-}
-
 // etcd nodes
 variable "etcd_instance_count" {
   description = "The number of etcd instances to launch."
@@ -115,63 +101,6 @@ variable "etcd_data_volume_size" {
   default     = "5"
 }
 
-// master nodes
-variable "master_instance_count" {
-  default     = "3"
-  description = "The number of kubernetes master instances to launch."
-}
-
-variable "master_instance_type" {
-  default     = "t2.small"
-  description = "The type of kubernetes master instances to launch."
-}
-
-variable "master_user_data" {
-  description = "The user data to provide to the kubernetes master instances."
-}
-
-// worker nodes
-variable "worker_ondemand_instance_count" {
-  default     = "3"
-  description = "The number of kubernetes worker on-demand instances to launch."
-}
-
-variable "worker_spot_instance_count" {
-  default     = "0"
-  description = "The number of kubernetes worker spot instances to launch."
-}
-
-variable "worker_spot_instance_bid" {
-  description = "The price to bid for kubernetes worker spot instances."
-  default     = ""
-}
-
-variable "worker_instance_type" {
-  default     = "m5.large"
-  description = "The type of kubernetes worker instances to launch."
-}
-
-variable "worker_user_data" {
-  description = "The user data to provide to the kubernetes worker instances."
-}
-
-variable "worker_elb_names" {
-  default     = []
-  description = "A list of Classic ELB names to be attached to the worker autoscaling groups."
-  type        = list(string)
-}
-
-variable "worker_target_group_arns" {
-  default     = []
-  description = "A list of ALB Target Group ARNs to register the worker instances with."
-  type        = list(string)
-}
-
-variable "master_kms_ebs_key_arns" {
-  default     = []
-  description = "KMS keys used by masters to manage EBS volumes. This should be the same value as `kmsKeyId` in the storageClass (https://kubernetes.io/docs/concepts/storage/storage-classes/#aws-ebs)"
-  type        = list(string)
-}
 
 locals {
   iam_prefix = "${var.iam_prefix}${var.iam_prefix == "" ? "" : "-"}"
