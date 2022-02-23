@@ -18,7 +18,7 @@ data "template_file" "etcd" {
 EOF
 }
 
-resource "aws_s3_bucket_object" "etcd" {
+resource "aws_s3_object" "etcd" {
   count   = length(var.etcd_user_data)
   bucket  = aws_s3_bucket.userdata.id
   key     = "etcd-config-${count.index}-${sha1(var.etcd_user_data[count.index])}.json"
@@ -66,17 +66,19 @@ resource "aws_iam_role_policy" "etcd" {
   policy = data.aws_iam_policy_document.etcd.json
 }
 
-// EC2 Instances
 resource "aws_instance" "etcd" {
   count                  = var.etcd_instance_count
   ami                    = var.containerlinux_ami_id
   instance_type          = var.etcd_instance_type
-  user_data              = data.template_file.etcd[count.index].rendered
   iam_instance_profile   = aws_iam_instance_profile.etcd.name
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.etcd.id]
   subnet_id              = var.private_subnet_ids[count.index % length(var.private_subnet_ids)]
   private_ip             = var.etcd_addresses[count.index]
+
+  launch_template {
+    id = aws_launch_template.etcd[count.index].id
+  }
 
   lifecycle {
     ignore_changes = [ami]
@@ -94,6 +96,12 @@ resource "aws_instance" "etcd" {
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
     "owner"                                     = "system"
   }
+}
+
+resource "aws_launch_template" "etcd" {
+  count     = var.etcd_instance_count
+  name      = "etcd-${count.index}-${sha1(var.etcd_user_data[count.index])}"
+  user_data = base64encode(data.template_file.etcd[count.index].rendered)
 }
 
 resource "aws_ebs_volume" "etcd-data" {

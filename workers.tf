@@ -16,7 +16,7 @@ data "template_file" "worker" {
 EOF
 }
 
-resource "aws_s3_bucket_object" "worker" {
+resource "aws_s3_object" "worker" {
   bucket  = aws_s3_bucket.userdata.id
   key     = "worker-config-${sha1(var.worker_user_data)}.json"
   content = var.worker_user_data
@@ -120,29 +120,30 @@ resource "aws_autoscaling_group" "worker" {
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
 
-  tags = [
-    {
-      key                 = "Name"
-      value               = "worker ${var.cluster_name}"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "terraform.io/component"
-      value               = "${var.cluster_name}/worker"
-      propagate_at_launch = true
-    },
-    {
-      // kube uses this tag to learn its cluster name and tag managed resources
-      key                 = "kubernetes.io/cluster/${var.cluster_name}"
-      value               = "owned"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "owner"
-      value               = "system"
-      propagate_at_launch = true
-    },
-  ]
+  tag {
+    key                 = "Name"
+    value               = "worker ${var.cluster_name}"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "terraform.io/component"
+    value               = "${var.cluster_name}/worker"
+    propagate_at_launch = true
+  }
+
+  tag {
+    // kube uses this tag to learn its cluster name and tag managed resources
+    key                 = "kubernetes.io/cluster/${var.cluster_name}"
+    value               = "owned"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "owner"
+    value               = "system"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_autoscaling_group" "worker-spot" {
@@ -159,29 +160,30 @@ resource "aws_autoscaling_group" "worker-spot" {
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
 
-  tags = [
-    {
-      key                 = "Name"
-      value               = "worker-spot ${var.cluster_name}"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "terraform.io/component"
-      value               = "${var.cluster_name}/worker-spot"
-      propagate_at_launch = true
-    },
-    {
-      // kube uses this tag to learn its cluster name and tag managed resources
-      key                 = "kubernetes.io/cluster/${var.cluster_name}"
-      value               = "owned"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "owner"
-      value               = "system"
-      propagate_at_launch = true
-    },
-  ]
+  tag {
+    key                 = "Name"
+    value               = "worker-spot ${var.cluster_name}"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "terraform.io/component"
+    value               = "${var.cluster_name}/worker-spot"
+    propagate_at_launch = true
+  }
+
+  tag {
+    // kube uses this tag to learn its cluster name and tag managed resources
+    key                 = "kubernetes.io/cluster/${var.cluster_name}"
+    value               = "owned"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "owner"
+    value               = "system"
+    propagate_at_launch = true
+  }
 }
 
 // VPC security groups
