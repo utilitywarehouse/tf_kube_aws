@@ -16,7 +16,7 @@ data "template_file" "master" {
 EOF
 }
 
-resource "aws_s3_bucket_object" "master" {
+resource "aws_s3_object" "master" {
   bucket  = aws_s3_bucket.userdata.id
   key     = "master-config-${sha1(var.master_user_data)}.json"
   content = var.master_user_data
@@ -123,29 +123,30 @@ resource "aws_autoscaling_group" "master" {
   target_group_arns         = [aws_lb_target_group.master443.arn]
   default_cooldown          = 60
 
-  tags = [
-    {
-      key                 = "Name"
-      value               = "master ${var.cluster_name}"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "terraform.io/component"
-      value               = "${var.cluster_name}/master"
-      propagate_at_launch = true
-    },
-    {
-      // kube uses this tag to learn its cluster name and tag managed resources
-      key                 = "kubernetes.io/cluster/${var.cluster_name}"
-      value               = "owned"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "owner"
-      value               = "system"
-      propagate_at_launch = true
-    },
-  ]
+  tag {
+    key                 = "Name"
+    value               = "master ${var.cluster_name}"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "terraform.io/component"
+    value               = "${var.cluster_name}/master"
+    propagate_at_launch = true
+  }
+
+  tag {
+    // kube uses this tag to learn its cluster name and tag managed resources
+    key                 = "kubernetes.io/cluster/${var.cluster_name}"
+    value               = "owned"
+    propagate_at_launch = true
+  }
+
+  tag {
+    key                 = "owner"
+    value               = "system"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_lb" "master" {

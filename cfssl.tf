@@ -16,7 +16,7 @@ data "template_file" "cfssl" {
 EOF
 }
 
-resource "aws_s3_bucket_object" "cfssl" {
+resource "aws_s3_object" "cfssl" {
   bucket  = aws_s3_bucket.userdata.id
   key     = "cfssl-config-${sha1(var.cfssl_user_data)}.json"
   content = var.cfssl_user_data
@@ -68,11 +68,14 @@ resource "aws_instance" "cfssl" {
   ami                    = var.containerlinux_ami_id
   instance_type          = "t3a.micro"
   iam_instance_profile   = aws_iam_instance_profile.cfssl.name
-  user_data              = data.template_file.cfssl.rendered
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.cfssl.id]
   subnet_id              = var.private_subnet_ids[0]
   private_ip             = var.cfssl_server_address
+
+  launch_template {
+    id = aws_launch_template.cfssl.id
+  }
 
   lifecycle {
     ignore_changes = [ami]
@@ -94,6 +97,11 @@ resource "aws_instance" "cfssl" {
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
     "owner"                                     = "system"
   }
+}
+
+resource "aws_launch_template" "cfssl" {
+  name      = "cfssl-${sha1(var.cfssl_user_data)}"
+  user_data = base64encode(data.template_file.cfssl.rendered)
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
