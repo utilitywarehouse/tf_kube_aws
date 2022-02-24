@@ -1,28 +1,9 @@
-data "template_file" "worker" {
-  template = <<EOF
-{
-  "ignition": {
-    "version": "2.2.0",
-    "config": {
-      "replace": {
-        "source": "s3://${aws_s3_bucket.userdata.id}/worker-config-${sha1(var.worker_user_data)}.json",
-        "aws": {
-          "region": "${var.region}"
-        }
-      }
-    }
-  }
-}
-EOF
-}
-
 resource "aws_s3_object" "worker" {
   bucket  = aws_s3_bucket.userdata.id
   key     = "worker-config-${sha1(var.worker_user_data)}.json"
   content = var.worker_user_data
 }
 
-// IAM instance role
 resource "aws_iam_role" "worker" {
   name                 = "${local.iam_prefix}${var.cluster_name}-worker"
   path                 = var.iam_path
@@ -68,14 +49,20 @@ resource "aws_iam_role_policy" "worker" {
   policy = data.aws_iam_policy_document.worker.json
 }
 
-// EC2 AutoScaling groups
 resource "aws_launch_configuration" "worker" {
   iam_instance_profile = aws_iam_instance_profile.worker.name
   image_id             = var.containerlinux_ami_id
   instance_type        = var.worker_instance_type
   key_name             = var.key_name
   security_groups      = [aws_security_group.worker.id]
-  user_data            = data.template_file.worker.rendered
+  user_data = base64encode(
+    templatefile("${path.module}/userdata.tftpl",
+      {
+        region = var.region,
+        source = "s3://${aws_s3_bucket.userdata.id}/worker-config-${sha1(var.worker_user_data)}.json"
+      }
+    )
+  )
 
   lifecycle {
     create_before_destroy = true
@@ -94,8 +81,14 @@ resource "aws_launch_configuration" "worker-spot" {
   spot_price           = var.worker_spot_instance_bid
   key_name             = var.key_name
   security_groups      = [aws_security_group.worker.id]
-  user_data            = data.template_file.worker.rendered
-
+  user_data = base64encode(
+    templatefile("${path.module}/userdata.tftpl",
+      {
+        region = var.region,
+        source = "s3://${aws_s3_bucket.userdata.id}/worker-config-${sha1(var.worker_user_data)}.json"
+      }
+    )
+  )
   lifecycle {
     create_before_destroy = true
   }
@@ -186,7 +179,6 @@ resource "aws_autoscaling_group" "worker-spot" {
   }
 }
 
-// VPC security groups
 resource "aws_security_group" "worker" {
   name        = "${var.cluster_name}-worker"
   description = "k8s worker security group"

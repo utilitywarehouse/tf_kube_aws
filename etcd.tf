@@ -1,23 +1,3 @@
-data "template_file" "etcd" {
-  count = length(var.etcd_user_data)
-
-  template = <<EOF
-{
-  "ignition": {
-    "version": "2.2.0",
-    "config": {
-      "replace": {
-        "source": "s3://${aws_s3_bucket.userdata.id}/etcd-config-${count.index}-${sha1(var.etcd_user_data[count.index])}.json",
-        "aws": {
-          "region": "${var.region}"
-        }
-      }
-    }
-  }
-}
-EOF
-}
-
 resource "aws_s3_object" "etcd" {
   count   = length(var.etcd_user_data)
   bucket  = aws_s3_bucket.userdata.id
@@ -25,7 +5,6 @@ resource "aws_s3_object" "etcd" {
   content = var.etcd_user_data[count.index]
 }
 
-// IAM instance role
 resource "aws_iam_role" "etcd" {
   name                 = "${local.iam_prefix}${var.cluster_name}-etcd"
   path                 = var.iam_path
@@ -81,7 +60,10 @@ resource "aws_instance" "etcd" {
   }
 
   lifecycle {
-    ignore_changes = [ami]
+    ignore_changes = [
+      ami,
+      user_data,
+    ]
   }
 
   root_block_device {
@@ -99,9 +81,16 @@ resource "aws_instance" "etcd" {
 }
 
 resource "aws_launch_template" "etcd" {
-  count     = var.etcd_instance_count
-  name      = "etcd-${count.index}-${sha1(var.etcd_user_data[count.index])}"
-  user_data = base64encode(data.template_file.etcd[count.index].rendered)
+  count = var.etcd_instance_count
+  name  = "etcd-${count.index}-${sha1(var.etcd_user_data[count.index])}"
+  user_data = base64encode(
+    templatefile("${path.module}/userdata.tftpl",
+      {
+        region = var.region,
+        source = "s3://${aws_s3_bucket.userdata.id}/etcd-config-${count.index}-${sha1(var.etcd_user_data[count.index])}.json"
+      }
+    )
+  )
 }
 
 resource "aws_ebs_volume" "etcd-data" {
@@ -134,7 +123,6 @@ resource "aws_volume_attachment" "etcd-data" {
   skip_destroy = true
 }
 
-// VPC Security Group
 resource "aws_security_group" "etcd" {
   name        = "${var.cluster_name}-etcd"
   description = "k8s etcd security group"
@@ -213,7 +201,6 @@ resource "aws_security_group_rule" "etcd-ssh" {
   security_group_id        = aws_security_group.etcd.id
 }
 
-// Route53 records
 resource "aws_route53_record" "etcd-all" {
   zone_id = var.route53_zone_id
   count   = 1

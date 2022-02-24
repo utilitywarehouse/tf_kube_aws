@@ -1,28 +1,9 @@
-data "template_file" "master" {
-  template = <<EOF
-{
-  "ignition": {
-    "version": "2.2.0",
-    "config": {
-      "replace": {
-        "source": "s3://${aws_s3_bucket.userdata.id}/master-config-${sha1(var.master_user_data)}.json",
-        "aws": {
-          "region": "${var.region}"
-        }
-      }
-    }
-  }
-}
-EOF
-}
-
 resource "aws_s3_object" "master" {
   bucket  = aws_s3_bucket.userdata.id
   key     = "master-config-${sha1(var.master_user_data)}.json"
   content = var.master_user_data
 }
 
-// IAM instance role
 resource "aws_iam_role" "master" {
   name                 = "${local.iam_prefix}${var.cluster_name}-master"
   path                 = var.iam_path
@@ -90,14 +71,20 @@ resource "aws_iam_role_policy" "master" {
   policy = data.aws_iam_policy_document.master.json
 }
 
-// EC2 AutoScaling Group
 resource "aws_launch_configuration" "master" {
   iam_instance_profile = aws_iam_instance_profile.master.name
   image_id             = var.containerlinux_ami_id
   instance_type        = var.master_instance_type
   key_name             = var.key_name
   security_groups      = [aws_security_group.master.id]
-  user_data            = data.template_file.master.rendered
+  user_data = base64encode(
+    templatefile("${path.module}/userdata.tftpl",
+      {
+        region = var.region,
+        source = "s3://${aws_s3_bucket.userdata.id}/master-config-${sha1(var.master_user_data)}.json"
+      }
+    )
+  )
 
   lifecycle {
     create_before_destroy = true
@@ -190,7 +177,6 @@ resource "aws_lb_target_group" "master443" {
   }
 }
 
-// VPC Security Group
 resource "aws_security_group" "master" {
   name        = "${var.cluster_name}-master"
   description = "k8s master security group"
@@ -251,7 +237,6 @@ resource "aws_security_group_rule" "master-ssh" {
   security_group_id        = aws_security_group.master.id
 }
 
-// Route53 records
 resource "aws_route53_record" "master-lb" {
   zone_id = var.route53_zone_id
   name    = "elb.master.${var.cluster_subdomain}.${data.aws_route53_zone.main.name}"
