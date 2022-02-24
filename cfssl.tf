@@ -1,28 +1,9 @@
-data "template_file" "cfssl" {
-  template = <<EOF
-{
-  "ignition": {
-    "version": "2.2.0",
-    "config": {
-      "replace": {
-        "source": "s3://${aws_s3_bucket.userdata.id}/cfssl-config-${sha1(var.cfssl_user_data)}.json",
-        "aws": {
-          "region": "${var.region}"
-        }
-      }
-    }
-  }
-}
-EOF
-}
-
 resource "aws_s3_object" "cfssl" {
   bucket  = aws_s3_bucket.userdata.id
   key     = "cfssl-config-${sha1(var.cfssl_user_data)}.json"
   content = var.cfssl_user_data
 }
 
-// IAM instance role
 resource "aws_iam_role" "cfssl" {
   name                 = "${local.iam_prefix}${var.cluster_name}-cfssl"
   path                 = var.iam_path
@@ -63,7 +44,6 @@ resource "aws_iam_role_policy" "cfssl" {
   policy = data.aws_iam_policy_document.cfssl.json
 }
 
-// EC2 Instance
 resource "aws_instance" "cfssl" {
   ami                    = var.containerlinux_ami_id
   instance_type          = "t3a.micro"
@@ -78,7 +58,10 @@ resource "aws_instance" "cfssl" {
   }
 
   lifecycle {
-    ignore_changes = [ami]
+    ignore_changes = [
+      ami,
+      user_data,
+    ]
   }
 
   root_block_device {
@@ -100,8 +83,15 @@ resource "aws_instance" "cfssl" {
 }
 
 resource "aws_launch_template" "cfssl" {
-  name      = "cfssl-${sha1(var.cfssl_user_data)}"
-  user_data = base64encode(data.template_file.cfssl.rendered)
+  name = "cfssl-${sha1(var.cfssl_user_data)}"
+  user_data = base64encode(
+    templatefile("${path.module}/userdata.tftpl",
+      {
+        region = var.region,
+        source = "s3://${aws_s3_bucket.userdata.id}/cfssl-config-${sha1(var.cfssl_user_data)}.json"
+      }
+    )
+  )
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
@@ -131,7 +121,6 @@ resource "aws_volume_attachment" "cfssl-data" {
   skip_destroy = true
 }
 
-// VPC Security Group
 resource "aws_security_group" "cfssl" {
   name        = "${var.cluster_name}-cfssl"
   description = "k8s cfssl security group"
@@ -219,7 +208,6 @@ resource "aws_security_group_rule" "ingress-worker-to-cfssl-fluent-bit-exporter"
   security_group_id        = aws_security_group.cfssl.id
 }
 
-// Route53 records
 resource "aws_route53_record" "cfssl-instance" {
   zone_id = var.route53_zone_id
   name    = "cfssl.${var.cluster_subdomain}.${data.aws_route53_zone.main.name}"
