@@ -141,11 +141,6 @@ variable "worker_spot_instance_count" {
   description = "The number of kubernetes worker spot instances to launch."
 }
 
-variable "worker_spot_instance_bid" {
-  description = "The price to bid for kubernetes worker spot instances."
-  default     = ""
-}
-
 variable "worker_instance_type" {
   default     = "m5.large"
   description = "The type of kubernetes worker instances to launch."

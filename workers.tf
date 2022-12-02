@@ -49,12 +49,27 @@ resource "aws_iam_role_policy" "worker" {
   policy = data.aws_iam_policy_document.worker.json
 }
 
-resource "aws_launch_configuration" "worker" {
-  iam_instance_profile = aws_iam_instance_profile.worker.name
-  image_id             = var.containerlinux_ami_id
-  instance_type        = var.worker_instance_type
-  key_name             = var.key_name
-  security_groups      = [aws_security_group.worker.id]
+resource "aws_launch_template" "worker" {
+  name_prefix = "${var.cluster_name}-worker-"
+  iam_instance_profile { name = aws_iam_instance_profile.worker.name }
+  image_id               = var.containerlinux_ami_id
+  instance_type          = var.worker_instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.worker.id]
+
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
+  #
+  # Flatcar Linux mentions using "/dev/xvda" as root:
+  #   https://flatcar-linux.org/docs/latest/reference/developer-guides/sdk-disk-partitions/#read-only-usr
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = 100
+      delete_on_termination = true
+    }
+  }
+
   user_data = base64encode(
     templatefile("${path.module}/userdata.tftpl",
       {
@@ -66,21 +81,34 @@ resource "aws_launch_configuration" "worker" {
 
   lifecycle {
     create_before_destroy = true
-  }
-
-  root_block_device {
-    volume_size = 100
-    volume_type = "gp2"
   }
 }
 
-resource "aws_launch_configuration" "worker-spot" {
-  iam_instance_profile = aws_iam_instance_profile.worker.name
-  image_id             = var.containerlinux_ami_id
-  instance_type        = var.worker_instance_type
-  spot_price           = var.worker_spot_instance_bid
-  key_name             = var.key_name
-  security_groups      = [aws_security_group.worker.id]
+resource "aws_launch_template" "worker_spot" {
+  name_prefix = "${var.cluster_name}-worker-spot-"
+  iam_instance_profile { name = aws_iam_instance_profile.worker.name }
+  image_id               = var.containerlinux_ami_id
+  instance_type          = var.worker_instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.worker.id]
+
+  instance_market_options {
+    market_type = "spot"
+  }
+
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
+  #
+  # Flatcar Linux mentions using "/dev/xvda" as root:
+  #   https://flatcar-linux.org/docs/latest/reference/developer-guides/sdk-disk-partitions/#read-only-usr
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = 100
+      delete_on_termination = true
+    }
+  }
+
   user_data = base64encode(
     templatefile("${path.module}/userdata.tftpl",
       {
@@ -89,13 +117,9 @@ resource "aws_launch_configuration" "worker-spot" {
       }
     )
   )
+
   lifecycle {
     create_before_destroy = true
-  }
-
-  root_block_device {
-    volume_size = 100
-    volume_type = "gp2"
   }
 }
 
@@ -107,11 +131,15 @@ resource "aws_autoscaling_group" "worker" {
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  launch_configuration      = aws_launch_configuration.worker.name
   vpc_zone_identifier       = var.private_subnet_ids
   load_balancers            = var.worker_elb_names
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
+
+  launch_template {
+    id      = aws_launch_template.worker.id
+    version = aws_launch_template.worker.latest_version
+  }
 
   tag {
     key                 = "Name"
@@ -147,11 +175,15 @@ resource "aws_autoscaling_group" "worker-spot" {
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  launch_configuration      = aws_launch_configuration.worker-spot.name
   vpc_zone_identifier       = var.private_subnet_ids
   load_balancers            = var.worker_elb_names
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
+
+  launch_template {
+    id      = aws_launch_template.worker_spot.id
+    version = aws_launch_template.worker_spot.latest_version
+  }
 
   tag {
     key                 = "Name"

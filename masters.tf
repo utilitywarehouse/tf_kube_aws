@@ -71,12 +71,27 @@ resource "aws_iam_role_policy" "master" {
   policy = data.aws_iam_policy_document.master.json
 }
 
-resource "aws_launch_configuration" "master" {
-  iam_instance_profile = aws_iam_instance_profile.master.name
-  image_id             = var.containerlinux_ami_id
-  instance_type        = var.master_instance_type
-  key_name             = var.key_name
-  security_groups      = [aws_security_group.master.id]
+resource "aws_launch_template" "master" {
+  name_prefix = "${var.cluster_name}-master-"
+  iam_instance_profile { name = aws_iam_instance_profile.master.name }
+  image_id               = var.containerlinux_ami_id
+  instance_type          = var.master_instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [aws_security_group.master.id]
+
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
+  #
+  # Flatcar Linux mentions using "/dev/xvda" as root:
+  #   https://flatcar-linux.org/docs/latest/reference/developer-guides/sdk-disk-partitions/#read-only-usr
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = 100
+      delete_on_termination = true
+    }
+  }
+
   user_data = base64encode(
     templatefile("${path.module}/userdata.tftpl",
       {
@@ -89,12 +104,6 @@ resource "aws_launch_configuration" "master" {
   lifecycle {
     create_before_destroy = true
   }
-
-  # Storage
-  root_block_device {
-    volume_type = "gp2"
-    volume_size = 100
-  }
 }
 
 resource "aws_autoscaling_group" "master" {
@@ -103,12 +112,16 @@ resource "aws_autoscaling_group" "master" {
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  launch_configuration      = aws_launch_configuration.master.name
   max_size                  = var.master_instance_count
   min_size                  = var.master_instance_count
   vpc_zone_identifier       = var.private_subnet_ids
   target_group_arns         = [aws_lb_target_group.master443.arn]
   default_cooldown          = 60
+
+  launch_template {
+    id      = aws_launch_template.master.id
+    version = aws_launch_template.master.latest_version
+  }
 
   tag {
     key                 = "Name"
