@@ -41,6 +41,41 @@ data "aws_iam_policy_document" "worker" {
     actions   = ["s3:GetObject"]
     resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/worker-*"]
   }
+
+# Grant worker nodes permissions to access EFS cluster. Source:
+# https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/iam-policy-example.json
+  statement {
+    actions = [
+      "ec2:DescribeAvailabilityZones",
+      "elasticfilesystem:DescribeAccessPoints",
+      "elasticfilesystem:DescribeFileSystems",
+      "elasticfilesystem:DescribeMountTargets",
+      ]
+    resources = ["*"]
+  }
+
+  statement {
+    actions   = ["elasticfilesystem:CreateAccessPoint"]
+    resources = ["*"]
+    condition {
+      test     = "StringLike"
+      variable = "aws:RequestTag/efs.csi.aws.com/cluster"
+      values   = ["true"]
+    }
+  }
+
+  statement {
+    actions = [
+      "elasticfilesystem:TagResource",
+      "elasticfilesystem:DeleteAccessPoint",
+      ]
+    resources = ["*"]
+    condition {
+      test     = "StringLike"
+      variable = "aws:ResourceTag/efs.csi.aws.com/cluster"
+      values   = ["true"]
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "worker" {
