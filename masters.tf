@@ -1,6 +1,6 @@
 resource "aws_s3_object" "master" {
   bucket  = aws_s3_bucket.userdata.id
-  key     = "master-config-${sha1(var.master_user_data)}.json"
+  key     = "master-config.json"
   content = var.master_user_data
 }
 
@@ -96,7 +96,7 @@ resource "aws_launch_template" "master" {
     templatefile("${path.module}/userdata.tftpl",
       {
         region = var.region,
-        source = "s3://${aws_s3_bucket.userdata.id}/master-config-${sha1(var.master_user_data)}.json"
+        source = "s3://${aws_s3_bucket.userdata.id}/master-config.json"
       }
     )
   )

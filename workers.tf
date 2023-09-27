@@ -1,6 +1,6 @@
 resource "aws_s3_object" "worker" {
   bucket  = aws_s3_bucket.userdata.id
-  key     = "worker-config-${sha1(var.worker_user_data)}.json"
+  key     = "worker-config.json"
   content = var.worker_user_data
 }
 
@@ -109,7 +109,7 @@ resource "aws_launch_template" "worker" {
     templatefile("${path.module}/userdata.tftpl",
       {
         region = var.region,
-        source = "s3://${aws_s3_bucket.userdata.id}/worker-config-${sha1(var.worker_user_data)}.json"
+        source = "s3://${aws_s3_bucket.userdata.id}/worker-config.json"
       }
     )
   )
@@ -148,7 +148,7 @@ resource "aws_launch_template" "worker_spot" {
     templatefile("${path.module}/userdata.tftpl",
       {
         region = var.region,
-        source = "s3://${aws_s3_bucket.userdata.id}/worker-config-${sha1(var.worker_user_data)}.json"
+        source = "s3://${aws_s3_bucket.userdata.id}/worker-config.json"
       }
     )
   )
