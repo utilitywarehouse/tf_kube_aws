@@ -23,20 +23,21 @@ Below is an example of how you might use this terraform module:
 module "aws_cluster" {
   source = "github.com/utilitywarehouse/tf_kube_aws"
 
-  region                         = "eu-west-1"
-  cluster_name                   = "example-kube"
-  cluster_subdomain              = "k8s"
-  vpc_id                         = "${aws_vpc.example.id}"
-  containerlinux_ami_id          = "ami-xxxxxxxxx"
-  route53_zone_id                = "${aws_route53_zone.example.id}"
-  route53_inaddr_arpa_zone_id    = "${aws_route53_zone.example-reverse.id}"
-  private_subnet_ids             = "${aws_subnet.private.*.id}"
-  public_subnet_ids              = "${aws_subnet.public.*.id}"
-  key_name                       = "${aws_key_pair.example.key_name}"
-  ssh_security_group_ids         = ["${aws_security_group.ssh.id}"]
-  cfssl_user_data                = "${module.ignition.cfssl}"
-  etcd_user_data                 = "${module.ignition.etcd}"
-  master_user_data               = "${module.ignition.master}"
-  worker_user_data               = "${module.ignition.worker}"
+  region                           = "eu-west-1"
+  cluster_name                     = "example-kube"
+  cluster_subdomain                = "k8s"
+  vpc_id                           = "${aws_vpc.example.id}"
+  containerlinux_ami_id            = "ami-xxxxxxxxx"
+  route53_zone_id                  = "${aws_route53_zone.example.id}"
+  route53_inaddr_arpa_zone_id      = "${aws_route53_zone.example-reverse.id}"
+  control_plane_private_subnet_ids = "${aws_subnet.control_plane_private.*.id}"
+  worker_node_private_subnet_ids   = "${aws_subnet.workers_private.*.id}"
+  public_subnet_ids                = "${aws_subnet.public.*.id}"
+  key_name                         = "${aws_key_pair.example.key_name}"
+  ssh_security_group_ids           = ["${aws_security_group.ssh.id}"]
+  cfssl_user_data                  = "${module.ignition.cfssl}"
+  etcd_user_data                   = "${module.ignition.etcd}"
+  master_user_data                 = "${module.ignition.master}"
+  worker_user_data                 = "${module.ignition.worker}"
 }
 ```

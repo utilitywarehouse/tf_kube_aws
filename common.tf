@@ -17,9 +17,14 @@ data "aws_vpc" "main" {
   id = var.vpc_id
 }
 
-data "aws_subnet" "private" {
-  count = var.private_subnet_count
-  id    = var.private_subnet_ids[count.index]
+data "aws_subnet" "control_plane_private" {
+  count = var.control_plane_private_subnet_count
+  id    = var.control_plane_private_subnet_ids[count.index]
+}
+
+data "aws_subnet" "workers_private" {
+  count = var.worker_node_private_subnet_count
+  id    = var.worker_node_private_subnet_ids[count.index]
 }
 
 data "aws_subnet" "public" {

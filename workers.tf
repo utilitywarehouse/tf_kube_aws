@@ -166,7 +166,7 @@ resource "aws_autoscaling_group" "worker" {
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  vpc_zone_identifier       = var.private_subnet_ids
+  vpc_zone_identifier       = var.worker_node_private_subnet_ids
   load_balancers            = var.worker_elb_names
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
@@ -210,7 +210,7 @@ resource "aws_autoscaling_group" "worker-spot" {
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
-  vpc_zone_identifier       = var.private_subnet_ids
+  vpc_zone_identifier       = var.worker_node_private_subnet_ids
   load_balancers            = var.worker_elb_names
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
