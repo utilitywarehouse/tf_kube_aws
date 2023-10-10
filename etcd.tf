@@ -52,7 +52,7 @@ resource "aws_instance" "etcd" {
   iam_instance_profile   = aws_iam_instance_profile.etcd.name
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.etcd.id]
-  subnet_id              = var.private_subnet_ids[count.index % length(var.private_subnet_ids)]
+  subnet_id              = var.control_plane_private_subnet_ids[count.index % length(var.control_plane_private_subnet_ids)]
   private_ip             = var.etcd_addresses[count.index]
 
   launch_template {
@@ -95,7 +95,7 @@ resource "aws_launch_template" "etcd" {
 
 resource "aws_ebs_volume" "etcd-data" {
   count             = var.etcd_instance_count
-  availability_zone = data.aws_subnet.private[count.index % length(var.private_subnet_ids)].availability_zone
+  availability_zone = data.aws_subnet.control_plane_private[count.index % length(var.control_plane_private_subnet_ids)].availability_zone
   size              = var.etcd_data_volume_size
   type              = "gp2"
 

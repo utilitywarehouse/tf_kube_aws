@@ -50,7 +50,7 @@ resource "aws_instance" "cfssl" {
   iam_instance_profile   = aws_iam_instance_profile.cfssl.name
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.cfssl.id]
-  subnet_id              = var.private_subnet_ids[0]
+  subnet_id              = var.control_plane_private_subnet_ids[0]
   private_ip             = var.cfssl_server_address
 
   launch_template {
@@ -95,7 +95,7 @@ resource "aws_launch_template" "cfssl" {
 }
 
 resource "aws_ebs_volume" "cfssl-data" {
-  availability_zone = data.aws_subnet.private[0].availability_zone
+  availability_zone = data.aws_subnet.control_plane_private[0].availability_zone
   size              = 5
   type              = "gp2"
 

@@ -25,12 +25,21 @@ variable "public_subnet_ids" {
   type        = list(string)
 }
 
-variable "private_subnet_count" {
-  description = "The number of private subnets"
+variable "control_plane_private_subnet_count" {
+  description = "The number of private subnets used for control plane resources"
 }
 
-variable "private_subnet_ids" {
-  description = "A list of the available private subnets in which EC2 instances can be created."
+variable "control_plane_private_subnet_ids" {
+  description = "A list of the available private subnets in which control plane nodes can be created."
+  type        = list(string)
+}
+
+variable "worker_node_private_subnet_count" {
+  description = "The number of private subnets used to spawn worker node instances"
+}
+
+variable "worker_node_private_subnet_ids" {
+  description = "A list of the available private subnets in which worker EC2 instances can be created."
   type        = list(string)
 }
 
