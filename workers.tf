@@ -42,15 +42,15 @@ data "aws_iam_policy_document" "worker" {
     resources = ["arn:aws:s3:::${aws_s3_bucket.userdata.id}/worker-*"]
   }
 
-# Grant worker nodes permissions to access EFS cluster. Source:
-# https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/iam-policy-example.json
+  # Grant worker nodes permissions to access EFS cluster. Source:
+  # https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/docs/iam-policy-example.json
   statement {
     actions = [
       "ec2:DescribeAvailabilityZones",
       "elasticfilesystem:DescribeAccessPoints",
       "elasticfilesystem:DescribeFileSystems",
       "elasticfilesystem:DescribeMountTargets",
-      ]
+    ]
     resources = ["*"]
   }
 
@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "worker" {
     actions = [
       "elasticfilesystem:TagResource",
       "elasticfilesystem:DeleteAccessPoint",
-      ]
+    ]
     resources = ["*"]
     condition {
       test     = "StringLike"
@@ -103,6 +103,14 @@ resource "aws_launch_template" "worker" {
       volume_size           = 100
       delete_on_termination = true
     }
+  }
+
+  # Enable IMDSv2 (require session tokens to talk to metadata services) adn set
+  # hop limit to 1, so that pods communication is rejected following best practices:
+  # https://docs.aws.amazon.com/whitepapers/latest/security-practices-multi-tenant-saas-applications-eks/restrict-the-use-of-host-networking-and-block-access-to-instance-metadata-service.html
+  metadata_options {
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
   }
 
   user_data = base64encode(
@@ -142,6 +150,14 @@ resource "aws_launch_template" "worker_spot" {
       volume_size           = 100
       delete_on_termination = true
     }
+  }
+
+  # Enable IMDSv2 (require session tokens to talk to metadata services) adn set
+  # hop limit to 1, so that pods communication is rejected following best practices:
+  # https://docs.aws.amazon.com/whitepapers/latest/security-practices-multi-tenant-saas-applications-eks/restrict-the-use-of-host-networking-and-block-access-to-instance-metadata-service.html
+  metadata_options {
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
   }
 
   user_data = base64encode(
