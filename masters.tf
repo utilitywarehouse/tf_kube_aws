@@ -92,6 +92,12 @@ resource "aws_launch_template" "master" {
     }
   }
 
+  # Allow containers to talk to IMDSv2 endpoint if needed by allowing 2 hops
+  metadata_options {
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 2
+  }
+
   user_data = base64encode(
     templatefile("${path.module}/userdata.tftpl",
       {
