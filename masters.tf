@@ -121,7 +121,7 @@ resource "aws_autoscaling_group" "master" {
   max_size                  = var.master_instance_count
   min_size                  = var.master_instance_count
   vpc_zone_identifier       = var.control_plane_private_subnet_ids
-  target_group_arns         = [aws_lb_target_group.master443.arn]
+  target_group_arns         = [aws_lb_target_group.master443.arn, aws_lb_target_group.control_plane_443.arn]
   default_cooldown          = 60
 
   launch_template {
@@ -182,6 +182,47 @@ resource "aws_lb_listener" "master443" {
 
 resource "aws_lb_target_group" "master443" {
   name     = "${var.cluster_name}-master443"
+  vpc_id   = var.vpc_id
+  port     = 443
+  protocol = "TCP"
+
+  health_check {
+    protocol = "TCP"
+    port     = 443
+  }
+
+  tags = {
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+  }
+}
+
+resource "aws_lb" "control_plane" {
+  name               = "${var.cluster_name}-control-plane-lb"
+  load_balancer_type = "network"
+  internal           = true
+  subnets            = var.control_plane_private_subnet_ids
+
+  idle_timeout = 3600
+
+  tags = {
+    "Name"                                      = "${var.cluster_name}-control-plane-lb"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+  }
+}
+
+resource "aws_lb_listener" "control_plane_443" {
+  load_balancer_arn = aws_lb.control_plane.arn
+  port              = "443"
+  protocol          = "TCP"
+
+  default_action {
+    target_group_arn = aws_lb_target_group.control_plane_443.arn
+    type             = "forward"
+  }
+}
+
+resource "aws_lb_target_group" "control_plane_443" {
+  name     = "${var.cluster_name}-control-plane-443"
   vpc_id   = var.vpc_id
   port     = 443
   protocol = "TCP"
