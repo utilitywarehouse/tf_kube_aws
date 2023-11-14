@@ -302,5 +302,5 @@ resource "aws_route53_record" "master-lb" {
   name    = "elb.master.${var.cluster_subdomain}.${data.aws_route53_zone.main.name}"
   type    = "CNAME"
   ttl     = "30"
-  records = [aws_lb.master.dns_name]
+  records = [aws_lb.control_plane.dns_name]
 }
