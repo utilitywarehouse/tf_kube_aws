@@ -121,7 +121,7 @@ resource "aws_autoscaling_group" "master" {
   max_size                  = var.master_instance_count
   min_size                  = var.master_instance_count
   vpc_zone_identifier       = var.control_plane_private_subnet_ids
-  target_group_arns         = [aws_lb_target_group.master443.arn, aws_lb_target_group.control_plane_443.arn]
+  target_group_arns         = [aws_lb_target_group.control_plane_443.arn]
   default_cooldown          = 60
 
   launch_template {
@@ -152,47 +152,6 @@ resource "aws_autoscaling_group" "master" {
     key                 = "owner"
     value               = "system"
     propagate_at_launch = true
-  }
-}
-
-resource "aws_lb" "master" {
-  name               = "${var.cluster_name}-master-lb"
-  load_balancer_type = "network"
-  internal           = false
-  subnets            = var.public_subnet_ids
-
-  idle_timeout = 3600
-
-  tags = {
-    "Name"                                      = "${var.cluster_name}-master-lb"
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  }
-}
-
-resource "aws_lb_listener" "master443" {
-  load_balancer_arn = aws_lb.master.arn
-  port              = "443"
-  protocol          = "TCP"
-
-  default_action {
-    target_group_arn = aws_lb_target_group.master443.arn
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_target_group" "master443" {
-  name     = "${var.cluster_name}-master443"
-  vpc_id   = var.vpc_id
-  port     = 443
-  protocol = "TCP"
-
-  health_check {
-    protocol = "TCP"
-    port     = 443
-  }
-
-  tags = {
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   }
 }
 
