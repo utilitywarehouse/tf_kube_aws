@@ -199,10 +199,10 @@ resource "aws_security_group_rule" "ingress-worker-to-cfssl-node-exporter" {
   security_group_id        = aws_security_group.cfssl.id
 }
 
-resource "aws_security_group_rule" "ingress-worker-to-cfssl-fluent-bit-exporter" {
+resource "aws_security_group_rule" "ingress-worker-to-cfssl-promtail" {
   type                     = "ingress"
-  from_port                = 8080
-  to_port                  = 8080
+  from_port                = 9080
+  to_port                  = 9080
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.worker.id
   security_group_id        = aws_security_group.cfssl.id
