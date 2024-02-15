@@ -182,6 +182,15 @@ resource "aws_security_group_rule" "ingress-worker-to-etcd-node-exporter" {
   security_group_id        = aws_security_group.etcd.id
 }
 
+resource "aws_security_group_rule" "ingress-worker-to-etcd-fluent-bit-temp" {
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.worker.id
+  security_group_id        = aws_security_group.etcd.id
+}
+
 resource "aws_security_group_rule" "ingress-worker-to-etcd-promtail" {
   type                     = "ingress"
   from_port                = 9080
