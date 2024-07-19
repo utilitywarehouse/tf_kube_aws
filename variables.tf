@@ -124,6 +124,16 @@ variable "etcd_data_volume_size" {
   default     = "5"
 }
 
+variable "etcd_data_volume_type" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume#type"
+  default     = "gp2"
+}
+
+variable "etcd_data_volume_iops" {
+  description = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume#iops"
+  default     = "3600"
+}
+
 // master nodes
 variable "master_instance_count" {
   default     = "3"
