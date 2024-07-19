@@ -97,7 +97,8 @@ resource "aws_ebs_volume" "etcd-data" {
   count             = var.etcd_instance_count
   availability_zone = data.aws_subnet.control_plane_private[count.index % length(var.control_plane_private_subnet_ids)].availability_zone
   size              = var.etcd_data_volume_size
-  type              = "gp2"
+  type              = "gp3"
+  iops              = var.etcd_data_volume_iops
 
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = {
