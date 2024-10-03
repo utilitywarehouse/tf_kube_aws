@@ -87,7 +87,7 @@ resource "aws_iam_role_policy" "worker" {
 resource "aws_launch_template" "worker" {
   name_prefix = "${var.cluster_name}-worker-"
   iam_instance_profile { name = aws_iam_instance_profile.worker.name }
-  image_id               = var.containerlinux_ami_id
+  image_id               = var.containerlinux_ami_parameter != "" ? var.containerlinux_ami_parameter : var.containerlinux_ami_id
   instance_type          = var.worker_instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.worker.id]

@@ -74,7 +74,7 @@ resource "aws_iam_role_policy" "master" {
 resource "aws_launch_template" "master" {
   name_prefix = "${var.cluster_name}-master-"
   iam_instance_profile { name = aws_iam_instance_profile.master.name }
-  image_id               = var.containerlinux_ami_id
+  image_id               = var.containerlinux_ami_parameter != "" ? var.containerlinux_ami_parameter : var.containerlinux_ami_id
   instance_type          = var.master_instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.master.id]

@@ -57,6 +57,11 @@ variable "containerlinux_ami_id" {
   description = "The ID of the Container Linux AMI to use for instances."
 }
 
+variable "containerlinux_ami_parameter" {
+  description = "The name of tyhe SSM Parameter for the Container Linux AMI to use for launch templates. If not present the containerlinux_ami_id variable will be used."
+  default     = ""
+}
+
 variable "route53_zone_id" {
   description = "The ID of the Route53 Zone to add records to."
 }
