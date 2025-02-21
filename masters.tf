@@ -124,6 +124,10 @@ resource "aws_autoscaling_group" "master" {
   target_group_arns         = [aws_lb_target_group.control_plane_443.arn]
   default_cooldown          = 60
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   launch_template {
     id      = aws_launch_template.master.id
     version = aws_launch_template.master.latest_version
@@ -163,6 +167,10 @@ resource "aws_lb" "control_plane" {
 
   idle_timeout = 3600
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     "Name"                                      = "${var.cluster_name}-control-plane-lb"
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
@@ -173,6 +181,10 @@ resource "aws_lb_listener" "control_plane_443" {
   load_balancer_arn = aws_lb.control_plane.arn
   port              = "443"
   protocol          = "TCP"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   default_action {
     target_group_arn = aws_lb_target_group.control_plane_443.arn
@@ -189,6 +201,10 @@ resource "aws_lb_target_group" "control_plane_443" {
   health_check {
     protocol = "TCP"
     port     = 443
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 
   tags = {

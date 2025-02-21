@@ -99,6 +99,10 @@ resource "aws_ebs_volume" "cfssl-data" {
   size              = 5
   type              = "gp2"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = {
     "Name"                                      = "cfssl ${var.cluster_name} data vol 0"

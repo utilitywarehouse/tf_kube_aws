@@ -100,6 +100,10 @@ resource "aws_ebs_volume" "etcd-data" {
   type              = "gp3"
   iops              = var.etcd_data_volume_iops
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = {
     "Name"                                      = "etcd ${var.cluster_name} data vol ${count.index}"
