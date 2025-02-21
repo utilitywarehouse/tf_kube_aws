@@ -64,6 +64,7 @@ resource "aws_instance" "etcd" {
       ami,
       user_data,
     ]
+    prevent_destroy = true
   }
 
   root_block_device {
@@ -99,6 +100,10 @@ resource "aws_ebs_volume" "etcd-data" {
   size              = var.etcd_data_volume_size
   type              = "gp3"
   iops              = var.etcd_data_volume_iops
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = {

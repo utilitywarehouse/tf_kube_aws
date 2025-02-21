@@ -187,6 +187,10 @@ resource "aws_autoscaling_group" "worker" {
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   launch_template {
     id      = aws_launch_template.worker.id
     version = aws_launch_template.worker.latest_version
@@ -230,6 +234,10 @@ resource "aws_autoscaling_group" "worker-spot" {
   load_balancers            = var.worker_elb_names
   target_group_arns         = var.worker_target_group_arns
   default_cooldown          = 60
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   launch_template {
     id      = aws_launch_template.worker_spot.id

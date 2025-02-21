@@ -62,6 +62,7 @@ resource "aws_instance" "cfssl" {
       ami,
       user_data,
     ]
+    prevent_destroy = true
   }
 
   root_block_device {
@@ -98,6 +99,10 @@ resource "aws_ebs_volume" "cfssl-data" {
   availability_zone = data.aws_subnet.control_plane_private[0].availability_zone
   size              = 5
   type              = "gp2"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
   tags = {
