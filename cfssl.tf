@@ -62,7 +62,6 @@ resource "aws_instance" "cfssl" {
       ami,
       user_data,
     ]
-    prevent_destroy = true
   }
 
   root_block_device {

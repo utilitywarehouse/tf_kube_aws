@@ -64,7 +64,6 @@ resource "aws_instance" "etcd" {
       ami,
       user_data,
     ]
-    prevent_destroy = true
   }
 
   root_block_device {
