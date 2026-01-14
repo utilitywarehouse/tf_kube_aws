@@ -68,7 +68,7 @@ resource "aws_instance" "etcd" {
 
   root_block_device {
     volume_type = "gp2"
-    volume_size = 10
+    volume_size = 15
   }
 
   // kube uses the kubernetes.io tag to learn its cluster name and tag managed resources
