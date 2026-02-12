@@ -34,6 +34,9 @@ data "aws_subnet" "public" {
 
 resource "aws_s3_bucket" "userdata" {
   bucket = "${var.bucket_prefix}-ignition-userdata-${var.cluster_name}"
+  tags = {
+    Name = "${var.bucket_prefix}-ignition-userdata-${var.cluster_name}"
+  }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "userdata" {
