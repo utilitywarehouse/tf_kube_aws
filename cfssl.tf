@@ -65,7 +65,7 @@ resource "aws_instance" "cfssl" {
   }
 
   root_block_device {
-    volume_type = "gp2"
+    volume_type = "gp3"
     volume_size = 15
   }
 
@@ -97,7 +97,7 @@ resource "aws_launch_template" "cfssl" {
 resource "aws_ebs_volume" "cfssl-data" {
   availability_zone = data.aws_subnet.control_plane_private[0].availability_zone
   size              = 5
-  type              = "gp2"
+  type              = "gp3"
 
   lifecycle {
     prevent_destroy = true
