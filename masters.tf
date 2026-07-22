@@ -88,6 +88,7 @@ resource "aws_launch_template" "master" {
 
     ebs {
       volume_size           = 100
+      volume_type           = "gp3"
       delete_on_termination = true
     }
   }
