@@ -181,6 +181,19 @@ variable "worker_target_group_arns" {
   type        = list(string)
 }
 
+variable "worker_groups" {
+  description = "Map of worker group configurations. Unset fields fall back to the global worker_* variables."
+  type = map(object({
+    ondemand_instance_count = optional(number)
+    spot_instance_count     = optional(number)
+    instance_type           = optional(string)
+    user_data               = optional(string)
+    elb_names               = optional(list(string))
+    target_group_arns       = optional(list(string))
+  }))
+  default = {}
+}
+
 variable "master_kms_ebs_key_arns" {
   default     = []
   description = "KMS keys used by masters to manage EBS volumes. This should be the same value as `kmsKeyId` in the storageClass (https://kubernetes.io/docs/concepts/storage/storage-classes/#aws-ebs)"
@@ -189,4 +202,26 @@ variable "master_kms_ebs_key_arns" {
 
 locals {
   iam_prefix = "${var.iam_prefix}${var.iam_prefix == "" ? "" : "-"}"
+}
+
+locals {
+  _default_worker_group = {
+    ondemand_instance_count = var.worker_ondemand_instance_count
+    spot_instance_count     = var.worker_spot_instance_count
+    instance_type           = var.worker_instance_type
+    user_data               = var.worker_user_data
+    elb_names               = var.worker_elb_names
+    target_group_arns       = var.worker_target_group_arns
+  }
+
+  effective_worker_groups = length(var.worker_groups) > 0 ? {
+    for name, g in var.worker_groups : name => {
+      ondemand_instance_count = g.ondemand_instance_count != null ? g.ondemand_instance_count : local._default_worker_group.ondemand_instance_count
+      spot_instance_count     = g.spot_instance_count != null ? g.spot_instance_count : local._default_worker_group.spot_instance_count
+      instance_type           = g.instance_type != null ? g.instance_type : local._default_worker_group.instance_type
+      user_data               = g.user_data != null ? g.user_data : local._default_worker_group.user_data
+      elb_names               = g.elb_names != null ? g.elb_names : local._default_worker_group.elb_names
+      target_group_arns       = g.target_group_arns != null ? g.target_group_arns : local._default_worker_group.target_group_arns
+    }
+  } : { default = local._default_worker_group }
 }

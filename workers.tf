@@ -1,7 +1,9 @@
 resource "aws_s3_object" "worker" {
+  for_each = local.effective_worker_groups
+
   bucket  = aws_s3_bucket.userdata.id
-  key     = "worker-config.json"
-  content = var.worker_user_data
+  key     = "worker-${each.key}-config.json"
+  content = each.value.user_data
 }
 
 resource "aws_iam_role" "worker" {
@@ -85,12 +87,15 @@ resource "aws_iam_role_policy" "worker" {
 }
 
 resource "aws_launch_template" "worker" {
-  name_prefix = "${var.cluster_name}-worker-"
-  iam_instance_profile { name = aws_iam_instance_profile.worker.name }
+  for_each = local.effective_worker_groups
+
+  name_prefix            = "${var.cluster_name}-worker-${each.key}-"
   image_id               = var.containerlinux_ami_parameter != "" ? var.containerlinux_ami_parameter : var.containerlinux_ami_id
-  instance_type          = var.worker_instance_type
+  instance_type          = each.value.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.worker.id]
+
+  iam_instance_profile { name = aws_iam_instance_profile.worker.name }
 
   # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html#available-ec2-device-names
   #
@@ -118,7 +123,7 @@ resource "aws_launch_template" "worker" {
     templatefile("${path.module}/userdata.tftpl",
       {
         region = var.region,
-        source = "s3://${aws_s3_bucket.userdata.id}/worker-config.json"
+        source = "s3://${aws_s3_bucket.userdata.id}/worker-${each.key}-config.json"
       }
     )
   )
@@ -129,12 +134,15 @@ resource "aws_launch_template" "worker" {
 }
 
 resource "aws_launch_template" "worker_spot" {
-  name_prefix = "${var.cluster_name}-worker-spot-"
-  iam_instance_profile { name = aws_iam_instance_profile.worker.name }
+  for_each = local.effective_worker_groups
+
+  name_prefix            = "${var.cluster_name}-worker-${each.key}-spot-"
   image_id               = var.containerlinux_ami_parameter != "" ? var.containerlinux_ami_parameter : var.containerlinux_ami_id
-  instance_type          = var.worker_instance_type
+  instance_type          = each.value.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.worker.id]
+
+  iam_instance_profile { name = aws_iam_instance_profile.worker.name }
 
   instance_market_options {
     market_type = "spot"
@@ -165,7 +173,7 @@ resource "aws_launch_template" "worker_spot" {
     templatefile("${path.module}/userdata.tftpl",
       {
         region = var.region,
-        source = "s3://${aws_s3_bucket.userdata.id}/worker-config.json"
+        source = "s3://${aws_s3_bucket.userdata.id}/worker-${each.key}-config.json"
       }
     )
   )
@@ -176,16 +184,18 @@ resource "aws_launch_template" "worker_spot" {
 }
 
 resource "aws_autoscaling_group" "worker" {
-  name                      = "worker ${var.cluster_name}"
-  desired_capacity          = var.worker_ondemand_instance_count
-  max_size                  = var.worker_ondemand_instance_count
-  min_size                  = var.worker_ondemand_instance_count
+  for_each = local.effective_worker_groups
+
+  name                      = "worker-${each.key} ${var.cluster_name}"
+  desired_capacity          = each.value.ondemand_instance_count
+  max_size                  = each.value.ondemand_instance_count
+  min_size                  = each.value.ondemand_instance_count
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
   vpc_zone_identifier       = var.worker_node_private_subnet_ids
-  load_balancers            = var.worker_elb_names
-  target_group_arns         = var.worker_target_group_arns
+  load_balancers            = each.value.elb_names
+  target_group_arns         = each.value.target_group_arns
   default_cooldown          = 60
 
   lifecycle {
@@ -193,19 +203,19 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   launch_template {
-    id      = aws_launch_template.worker.id
-    version = aws_launch_template.worker.latest_version
+    id      = aws_launch_template.worker[each.key].id
+    version = aws_launch_template.worker[each.key].latest_version
   }
 
   tag {
     key                 = "Name"
-    value               = "worker ${var.cluster_name}"
+    value               = "worker-${each.key} ${var.cluster_name}"
     propagate_at_launch = true
   }
 
   tag {
     key                 = "terraform.io/component"
-    value               = "${var.cluster_name}/worker"
+    value               = "${var.cluster_name}/worker-${each.key}"
     propagate_at_launch = true
   }
 
@@ -224,16 +234,18 @@ resource "aws_autoscaling_group" "worker" {
 }
 
 resource "aws_autoscaling_group" "worker-spot" {
-  name                      = "worker-spot ${var.cluster_name}"
-  desired_capacity          = var.worker_spot_instance_count
-  max_size                  = var.worker_spot_instance_count
-  min_size                  = var.worker_spot_instance_count
+  for_each = local.effective_worker_groups
+
+  name                      = "worker-${each.key}-spot ${var.cluster_name}"
+  desired_capacity          = each.value.spot_instance_count
+  max_size                  = each.value.spot_instance_count
+  min_size                  = each.value.spot_instance_count
   health_check_grace_period = 60
   health_check_type         = "EC2"
   force_delete              = true
   vpc_zone_identifier       = var.worker_node_private_subnet_ids
-  load_balancers            = var.worker_elb_names
-  target_group_arns         = var.worker_target_group_arns
+  load_balancers            = each.value.elb_names
+  target_group_arns         = each.value.target_group_arns
   default_cooldown          = 60
 
   lifecycle {
@@ -241,19 +253,19 @@ resource "aws_autoscaling_group" "worker-spot" {
   }
 
   launch_template {
-    id      = aws_launch_template.worker_spot.id
-    version = aws_launch_template.worker_spot.latest_version
+    id      = aws_launch_template.worker_spot[each.key].id
+    version = aws_launch_template.worker_spot[each.key].latest_version
   }
 
   tag {
     key                 = "Name"
-    value               = "worker-spot ${var.cluster_name}"
+    value               = "worker-${each.key}-spot ${var.cluster_name}"
     propagate_at_launch = true
   }
 
   tag {
     key                 = "terraform.io/component"
-    value               = "${var.cluster_name}/worker-spot"
+    value               = "${var.cluster_name}/worker-${each.key}-spot"
     propagate_at_launch = true
   }
 
